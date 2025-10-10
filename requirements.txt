@@ -1,0 +1,11 @@
+# Required packages for WhatsApp Mitzvah Bot
+
+# For Twilio WhatsApp API (recommended)
+twilio==8.10.0
+python-dotenv==1.0.0
+
+# For simple WhatsApp Web automation (no API needed)
+pywhatkit==5.4
+
+# Common dependencies
+schedule==1.2.0

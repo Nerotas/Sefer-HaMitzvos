@@ -1,0 +1,1 @@
+worker: python mitzvah_whatsapp_bot.py
