@@ -1,6 +1,6 @@
 # 🕊️ Sefer HaMitzvos - WhatsApp Daily Study Bot
 
-> *Automated daily mitzvah study messages via WhatsApp*
+> _Automated daily mitzvah study messages via WhatsApp_
 
 [![Deploy on Railway](https://railway.app/button.svg)](https://railway.app/new/template?template=https://github.com/Nerotas/Sefer-HaMitzvos)
 
@@ -11,7 +11,7 @@ This project provides a WhatsApp bot that sends daily study messages from the Ra
 ## ✨ **Features**
 
 - 🤖 **Automated Daily Messages** - Sends at 8 AM UTC daily
-- 📱 **WhatsApp Integration** - Uses Twilio API for reliable delivery  
+- 📱 **WhatsApp Integration** - Uses Twilio API for reliable delivery
 - 📊 **Structured Schedule** - 613 mitzvot organized over ~1 year
 - 🌍 **Multi-recipient** - Send to individuals or groups
 - ☁️ **Cloud Ready** - Deploy free on Railway, Heroku, or Render
@@ -20,9 +20,11 @@ This project provides a WhatsApp bot that sends daily study messages from the Ra
 ## 🚀 **Quick Deploy**
 
 ### **1-Click Railway Deploy**
+
 [![Deploy on Railway](https://railway.app/button.svg)](https://railway.app/new/template?template=https://github.com/Nerotas/Sefer-HaMitzvos)
 
 ### **Manual Setup**
+
 1. **Clone repository**
 2. **Get Twilio credentials** (see [`docs/TWILIO_SETUP_GUIDE.md`](docs/TWILIO_SETUP_GUIDE.md))
 3. **Deploy to cloud** (see [`docs/RAILWAY_DEPLOYMENT_PLAN.md`](docs/RAILWAY_DEPLOYMENT_PLAN.md))
@@ -49,7 +51,7 @@ This project provides a WhatsApp bot that sends daily study messages from the Ra
 │   └── create_corrected_schedule.py # Generate aligned schedule
 ├── 📁 OLD/                     # Original source files
 ├── 📊 MitzvosMasterList.csv    # Complete 613 mitzvot list
-├── 📅 Schedule.csv             # Original study schedule  
+├── 📅 Schedule.csv             # Original study schedule
 ├── ✅ Schedule_Corrected.csv   # Aligned schedule (bot uses this)
 └── 📋 requirements.txt         # Python dependencies
 ```
@@ -87,10 +89,10 @@ Fulfill this mitzvah with joy and intention! 💫🙏
 
 ## 📖 **Documentation**
 
-| Guide | Description |
-|-------|-------------|
-| [Railway Deployment](docs/RAILWAY_DEPLOYMENT_PLAN.md) | Complete Railway setup guide |
-| [Twilio Setup](docs/TWILIO_SETUP_GUIDE.md) | Get WhatsApp API credentials |
+| Guide                                                 | Description                       |
+| ----------------------------------------------------- | --------------------------------- |
+| [Railway Deployment](docs/RAILWAY_DEPLOYMENT_PLAN.md) | Complete Railway setup guide      |
+| [Twilio Setup](docs/TWILIO_SETUP_GUIDE.md)            | Get WhatsApp API credentials      |
 | [Cloud Deployment](docs/CLOUD_DEPLOYMENT_COMPLETE.md) | Multi-platform deployment options |
 
 ## 🤝 **Contributing**
@@ -113,6 +115,6 @@ This project is licensed under the MIT License - see the [LICENSE](LICENSE) file
 
 ---
 
-***May your Torah study illuminate your path! ✨📚***
+**_May your Torah study illuminate your path! ✨📚_**
 
-*Built with ❤️ for daily Torah learning*
+_Built with ❤️ for daily Torah learning_
