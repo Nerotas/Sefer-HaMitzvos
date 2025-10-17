@@ -11,7 +11,8 @@ This project provides an AWS Lambda-powered WhatsApp bot that sends daily study 
 - 🤖 **Serverless Architecture** - AWS Lambda for zero-maintenance automation
 - 📱 **WhatsApp Integration** - Twilio API for reliable message delivery
 - 📊 **354-Day Schedule** - All 613 mitzvot organized in annual cycle
-- 🕐 **Custom Timing** - Configurable daily delivery (default: 1:10 PM CST)
+- � **Sefaria Integration** - Direct links to study each mitzvah on Sefaria.org
+- �🕐 **Custom Timing** - Configurable daily delivery (default: 1:10 PM CST)
 - 💰 **Cost-Effective** - Runs for ~$0.001/month on AWS free tier
 - 📖 **Hebrew Sources** - Biblical references with English translations
 - 🔄 **Auto-Cycling** - Automatically restarts after completing all 613 mitzvot
@@ -39,11 +40,7 @@ This project provides an AWS Lambda-powered WhatsApp bot that sends daily study 
 ├── 📁 docs/                           # Documentation
 │   ├── AWS_LAMBDA_SETUP.md           # Complete Lambda setup guide
 │   └── SCHEDULE_SETUP.md              # Daily scheduling configuration
-├── 📁 archive/                        # Archived old implementations
-│   ├── bots_old/                     # Previous bot versions
-│   ├── docs_old/                     # Old documentation
-│   └── deployment_old/               # Legacy deployment configs
-├── 📊 MitzvosMasterList.csv           # Complete 613 mitzvot reference
+├──  MitzvosMasterList.csv           # Complete 613 mitzvot reference
 ├── 📅 Schedule.csv                    # 354-day mitzvot schedule (embedded in bot)
 ├── 📦 mitzvah_bot_lambda.zip          # Ready-to-deploy Lambda package
 ├── 🔧 create_lambda_package.bat       # Package creation script
@@ -54,13 +51,20 @@ This project provides an AWS Lambda-powered WhatsApp bot that sends daily study 
 ## 💬 **Sample Message**
 
 ```
-�️ Daily Mitzvah - Day 20 of 354
+🕊️ Sefer HaMitzvos Daily Study 📚
 
-� Source: שמות כ:ב - אנכי ה' אלהיך
+📅 Thursday, October 17, 2025
 
-� Translation: To believe that God exists and is the source of all existence
+🔢 Mitzvah #1
+To know there is a G‑d
 
-#SeferHaMitzvos #DailyTorah
+📚 Source: Shemos 20:2
+
+🔗 Study on Sefaria: https://www.sefaria.org/Sefer_HaMitzvot%2C_Positive_Commandments.1?lang=bi
+
+Fulfill this mitzvah with joy and intention! 💫🙏
+
+—Daily Mitzvah Bot (AWS Lambda)
 ```
 
 ## 🛠️ **Technology Stack**

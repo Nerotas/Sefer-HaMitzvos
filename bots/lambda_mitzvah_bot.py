@@ -151,9 +151,69 @@ class MitzvahLambdaBot:
         logger.warning(f"No mitzvah found for {target_date}")
         return None
 
-    def format_message(self, mitzvah_data):
+    # TODO: Re-enable Sefaria links once accuracy is verified
+    # def generate_sefaria_link(self, mitzvos, english_title):
+    #     """
+    #     Generate Sefaria links based on the mitzvah type and number.
+    #     Handles multiple mitzvot separated by commas.
+    #     """
+    #     base_url = "https://www.sefaria.org/Sefer_HaMitzvot%2C_"
+    #
+    #     # Handle Introduction/Shorashim (principles)
+    #     if mitzvos.startswith("Intro"):
+    #         intro_num = mitzvos.split()[1]
+    #         return f"{base_url}Shorashim.{intro_num}?lang=bi"
+    #
+    #     # Handle multiple mitzvot (e.g., "612, 613")
+    #     if "," in mitzvos:
+    #         mitzvah_numbers = [num.strip() for num in mitzvos.split(",")]
+    #         links = []
+    #
+    #         for mitzvah_num in mitzvah_numbers:
+    #             if mitzvah_num.isdigit():
+    #                 num = int(mitzvah_num)
+    #
+    #                 # Traditional structure: first 248 are positive, rest are negative
+    #                 if num <= 248:
+    #                     # Check if this is actually a negative commandment (mixed schedule)
+    #                     if english_title.startswith("Not to") or "prohibition" in english_title.lower():
+    #                         links.append(f"{base_url}Negative_Commandments.{num}?lang=bi")
+    #                     else:
+    #                         links.append(f"{base_url}Positive_Commandments.{num}?lang=bi")
+    #                 else:
+    #                     # Numbers 249-613 are negative commandments (numbered as 1-365 in Sefaria)
+    #                     negative_num = num - 248
+    #                     links.append(f"{base_url}Negative_Commandments.{negative_num}?lang=bi")
+    #
+    #         # Join multiple links with " & "
+    #         return " & ".join(links)
+    #
+    #     # Handle single numbered mitzvot
+    #     if mitzvos.isdigit():
+    #         mitzvah_num = int(mitzvos)
+    #
+    #         # Traditional structure: first 248 are positive, rest are negative
+    #         if mitzvah_num <= 248:
+    #             # Check if this is actually a negative commandment (mixed schedule)
+    #             if english_title.startswith("Not to") or "prohibition" in english_title.lower():
+    #                 # This is a negative commandment with a low number (mixed schedule)
+    #                 return f"{base_url}Negative_Commandments.{mitzvah_num}?lang=bi"
+    #             else:
+    #                 # This is a positive commandment
+    #                 return f"{base_url}Positive_Commandments.{mitzvah_num}?lang=bi"
+    #         else:
+    #             # Numbers 249-613 are negative commandments (numbered as 1-365 in Sefaria)
+    #             negative_num = mitzvah_num - 248
+    #             return f"{base_url}Negative_Commandments.{negative_num}?lang=bi"
+    #
+    #     # Default case
+    #     return f"{base_url}Positive_Commandments.{mitzvos}?lang=bi"    def format_message(self, mitzvah_data):
         """Format the WhatsApp message."""
         date_formatted = datetime.strptime(mitzvah_data['date'], '%Y-%m-%d').strftime('%A, %B %d, %Y')
+
+        # TODO: Re-enable Sefaria links once accuracy is verified
+        # Generate Sefaria link
+        # sefaria_link = self.generate_sefaria_link(mitzvah_data['mitzvos'], mitzvah_data['title'])
 
         if mitzvah_data['mitzvos'].startswith('Intro'):
             # Introduction/Shorashim message
