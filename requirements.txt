@@ -1,14 +1,11 @@
-# Required packages for WhatsApp Mitzvah Bot
+# AWS Lambda Dependencies for Mitzvah Bot
 
-# For Twilio WhatsApp API (recommended)
-twilio==8.10.0
-python-dotenv==1.0.0
+# For Twilio WhatsApp API
+twilio>=9.8.0
 
-# For simple WhatsApp Web automation (no API needed)
-pywhatkit==5.4
+# HTTP requests (included with twilio but explicit)
+requests>=2.32.0
 
-# For Telegram bot (alternative)
-python-telegram-bot==20.6
-
-# Common dependencies
-schedule==1.2.0
+# Note: python-dotenv, schedule not needed in Lambda
+# Environment variables managed by AWS Lambda
+# Scheduling handled by CloudWatch Events

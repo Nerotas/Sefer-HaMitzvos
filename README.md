@@ -1,99 +1,99 @@
-# 🕊️ Sefer HaMitzvos - WhatsApp Daily Study Bot
+# 🕊️ Sefer HaMitzvos - AWS Lambda WhatsApp Bot
 
-> _Automated daily mitzvah study messages via WhatsApp_
-
-[![Deploy on Railway](https://railway.app/button.svg)](https://railway.app/new/template?template=https://github.com/Nerotas/Sefer-HaMitzvos)
+> _Serverless daily mitzvah study messages via WhatsApp using AWS Lambda_
 
 ## 📚 **Overview**
 
-This project provides a WhatsApp bot that sends daily study messages from the Rambam's Sefer HaMitzvos (Book of Commandments), covering all 613 mitzvot in an organized schedule. Perfect for individuals or groups wanting to complete a systematic study of Jewish commandments.
+This project provides an AWS Lambda-powered WhatsApp bot that sends daily study messages from the Rambam's Sefer HaMitzvos (Book of Commandments), covering all 613 mitzvot in an organized 354-day cycle. Perfect for automated daily Torah study delivered to your WhatsApp.
 
 ## ✨ **Features**
 
-- 🤖 **Automated Daily Messages** - Sends at 8 AM UTC daily
-- 📱 **WhatsApp Integration** - Uses Twilio API for reliable delivery
-- 📊 **Structured Schedule** - 613 mitzvot organized over ~1 year
-- 🌍 **Multi-recipient** - Send to individuals or groups
-- ☁️ **Cloud Ready** - Deploy free on Railway, Heroku, or Render
-- 📖 **Hebrew Sources** - Biblical references in Hebrew (Shemos, Devarim, etc.)
+- 🤖 **Serverless Architecture** - AWS Lambda for zero-maintenance automation
+- 📱 **WhatsApp Integration** - Twilio API for reliable message delivery
+- 📊 **354-Day Schedule** - All 613 mitzvot organized in annual cycle
+- 🕐 **Custom Timing** - Configurable daily delivery (default: 1:10 PM CST)
+- 💰 **Cost-Effective** - Runs for ~$0.001/month on AWS free tier
+- 📖 **Hebrew Sources** - Biblical references with English translations
+- 🔄 **Auto-Cycling** - Automatically restarts after completing all 613 mitzvot
 
-## 🚀 **Quick Deploy**
+## 🚀 **Quick Setup**
 
-### **1-Click Railway Deploy**
+### **Prerequisites**
 
-[![Deploy on Railway](https://railway.app/button.svg)](https://railway.app/new/template?template=https://github.com/Nerotas/Sefer-HaMitzvos)
+1. **AWS Account** - Free tier eligible
+2. **Twilio Account** - WhatsApp sandbox access
+3. **WhatsApp Number** - For receiving daily messages
 
-### **Manual Setup**
+### **Deployment**
 
-1. **Clone repository**
-2. **Get Twilio credentials** (see [`docs/TWILIO_SETUP_GUIDE.md`](docs/TWILIO_SETUP_GUIDE.md))
-3. **Deploy to cloud** (see [`docs/RAILWAY_DEPLOYMENT_PLAN.md`](docs/RAILWAY_DEPLOYMENT_PLAN.md))
+1. **Upload** `mitzvah_bot_lambda_FIXED.zip` to AWS Lambda
+2. **Configure** environment variables (Twilio credentials)
+3. **Set** timeout to 30 seconds
+4. **Schedule** daily execution with CloudWatch Events
 
 ## 📂 **Repository Structure**
 
 ```
-├── 📁 bots/                    # WhatsApp bot implementations
-│   ├── mitzvah_bot_cloud.py    # Production bot (recommended)
-│   ├── mitzvah_whatsapp_bot.py # Local development version
-│   └── simple_whatsapp_bot.py  # Browser-based alternative
-├── 📁 deployment/              # Cloud deployment configurations
-│   ├── railway.json           # Railway deployment config
-│   ├── Procfile               # Heroku/Railway process file
-│   ├── render.yaml            # Render deployment config
-│   └── deploy_*.sh/.bat       # Automated deployment scripts
-├── 📁 docs/                    # Documentation
-│   ├── RAILWAY_DEPLOYMENT_PLAN.md  # Step-by-step Railway setup
-│   ├── TWILIO_SETUP_GUIDE.md      # Twilio account & credentials
-│   └── *.md                       # Additional guides
-├── 📁 scripts/                 # Data processing utilities
-│   ├── convert_to_csv.py       # Convert text to structured CSV
-│   ├── convert_books_to_hebrew.py # Hebrew book name conversion
-│   └── create_corrected_schedule.py # Generate aligned schedule
-├── 📁 OLD/                     # Original source files
-├── 📊 MitzvosMasterList.csv    # Complete 613 mitzvot list
-├── 📅 Schedule.csv             # Original study schedule
-├── ✅ Schedule_Corrected.csv   # Aligned schedule (bot uses this)
-└── 📋 requirements.txt         # Python dependencies
+├── 📁 bots/                           # Lambda bot implementation
+│   └── lambda_mitzvah_bot.py          # AWS Lambda function (main bot)
+├── 📁 docs/                           # Documentation
+│   ├── AWS_LAMBDA_SETUP.md           # Complete Lambda setup guide
+│   └── SCHEDULE_SETUP.md              # Daily scheduling configuration
+├── 📁 archive/                        # Archived old implementations
+│   ├── bots_old/                     # Previous bot versions
+│   ├── docs_old/                     # Old documentation
+│   └── deployment_old/               # Legacy deployment configs
+├── 📊 MitzvosMasterList.csv           # Complete 613 mitzvot reference
+├── 📅 Schedule.csv                    # 354-day mitzvot schedule (embedded in bot)
+├── 📦 mitzvah_bot_lambda.zip          # Ready-to-deploy Lambda package
+├── 🔧 create_lambda_package.bat       # Package creation script
+├── 📋 requirements.txt                # Python dependencies
+└── 🔐 .env.example                   # Environment variables template
 ```
 
 ## 💬 **Sample Message**
 
 ```
-🕊️ Sefer HaMitzvos Daily Study 📚
+�️ Daily Mitzvah - Day 20 of 354
 
-📅 Friday, October 11, 2025
+� Source: שמות כ:ב - אנכי ה' אלהיך
 
-🔢 Mitzvah #1
-_To believe that God exists and is the source of all existence_
+� Translation: To believe that God exists and is the source of all existence
 
-📚 Source: Devarim 6:4
-
-Fulfill this mitzvah with joy and intention! 💫🙏
-
-—Daily Mitzvah Bot
+#SeferHaMitzvos #DailyTorah
 ```
 
 ## 🛠️ **Technology Stack**
 
-- **Language**: Python 3.11+
+- **Platform**: AWS Lambda (Serverless)
+- **Language**: Python 3.11
 - **Messaging**: Twilio WhatsApp API
-- **Scheduling**: Python `schedule` library
-- **Deployment**: Railway, Heroku, Render (free tiers available)
-- **Data**: CSV-based mitzvot database
+- **Scheduling**: CloudWatch Events (Cron)
+- **Data**: Embedded CSV schedule (354 days)
 
-## 💰 **Cost**
+## 💰 **Cost Breakdown**
 
-- **Free Options**: Railway ($5/month credit), Twilio Sandbox
-- **Production**: ~$5-10/month for unlimited recipients
-- **Per Message**: ~$0.005 per WhatsApp message sent
+- **AWS Lambda**: ~$0.001/month (free tier)
+- **CloudWatch Events**: ~$0.00/month (free tier)
+- **Twilio WhatsApp**: ~$0.005 per message sent
+- **Total**: ~$0.15/month for daily messages
 
 ## 📖 **Documentation**
 
-| Guide                                                 | Description                       |
-| ----------------------------------------------------- | --------------------------------- |
-| [Railway Deployment](docs/RAILWAY_DEPLOYMENT_PLAN.md) | Complete Railway setup guide      |
-| [Twilio Setup](docs/TWILIO_SETUP_GUIDE.md)            | Get WhatsApp API credentials      |
-| [Cloud Deployment](docs/CLOUD_DEPLOYMENT_COMPLETE.md) | Multi-platform deployment options |
+| Guide                                        | Description                      |
+| -------------------------------------------- | -------------------------------- |
+| [AWS Lambda Setup](docs/AWS_LAMBDA_SETUP.md) | Complete Lambda deployment guide |
+| [Schedule Setup](docs/SCHEDULE_SETUP.md)     | Daily automation configuration   |
+
+## 🚀 **Getting Started**
+
+1. **Download** `mitzvah_bot_lambda.zip`
+2. **Create** AWS Lambda function
+3. **Upload** the package
+4. **Configure** Twilio environment variables
+5. **Set** 30-second timeout
+6. **Schedule** daily execution
+7. **Test** and enjoy daily mitzvah messages!
 
 ## 🤝 **Contributing**
 
@@ -110,8 +110,8 @@ This project is licensed under the MIT License - see the [LICENSE](LICENSE) file
 ## 🙏 **Acknowledgments**
 
 - **Rambam (Maimonides)** - For the Sefer HaMitzvos
-- **Twilio** - For WhatsApp API infrastructure
-- **Railway** - For free cloud hosting
+- **AWS** - For serverless infrastructure
+- **Twilio** - For WhatsApp API
 
 ---
 

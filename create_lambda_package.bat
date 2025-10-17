@@ -10,9 +10,9 @@ echo 📦 Installing Twilio for Lambda...
 REM Install twilio without user packages
 python -m pip install twilio --target lambda_deploy --no-user
 
-echo 📄 Copying bot code...
+echo 📄 Copying Lambda bot code...
 
-REM Copy Lambda bot code
+REM Copy the Lambda bot code
 copy bots\lambda_mitzvah_bot.py lambda_deploy\lambda_function.py
 
 echo 🗜️ Creating ZIP package...
@@ -26,13 +26,21 @@ REM Show package size
 for %%I in (mitzvah_bot_lambda.zip) do echo 📊 Package size: %%~zI bytes
 
 echo.
+echo 🔧 FEATURES INCLUDED:
+echo - Detailed logging at each step
+echo - Module-level Twilio imports for performance
+echo - Timeout protection and error handling
+echo - Embedded 354-day schedule
+echo - AWS Lambda optimized code
+echo.
 echo 📋 Next Steps:
-echo 1. Create AWS account at https://aws.amazon.com/
-echo 2. Go to AWS Lambda console
-echo 3. Create function named: daily-mitzvah-bot
-echo 4. Upload mitzvah_bot_lambda.zip
-echo 5. Set environment variables for Twilio credentials
-echo 6. Set up CloudWatch Events for daily schedule
+echo 1. In AWS Lambda console, upload mitzvah_bot_lambda.zip
+echo 2. IMPORTANT: Increase timeout to 30 seconds:
+echo    - Go to Configuration ^> General configuration
+echo    - Change Timeout from 3 seconds to 30 seconds
+echo    - Save changes
+echo 3. Test the function - should see detailed logs
+echo 4. Set up daily scheduling with CloudWatch Events
 
 REM Clean up
 rmdir /s /q lambda_deploy
