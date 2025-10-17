@@ -185,11 +185,91 @@ _—Daily Mitzvah Bot_"""
         else:
             logging.error("Failed to send daily mitzvah")
 
+    def send_deployment_notification(self):
+        """Send a notification when the bot is deployed/started."""
+        try:
+            deploy_info = self.get_deployment_info()
+            message = f"""🚀 *Bot Deployment Notification*
+
+⏰ Time: {datetime.now().strftime('%Y-%m-%d %H:%M:%S UTC')}
+🤖 Status: Bot Started Successfully
+🌐 Environment: {deploy_info['environment']}
+📝 Version: {deploy_info['version']}
+🔧 Mode: {deploy_info['mode']}
+
+✅ Daily Mitzvah Bot is now running!
+
+_—Deployment Monitor_"""
+
+            # Send immediately (in 1 minute to ensure WhatsApp Web loads)
+            success = self.send_to_group(message)
+            if success:
+                logging.info("Deployment notification sent successfully!")
+            else:
+                logging.warning("Failed to send deployment notification")
+
+        except Exception as e:
+            logging.error(f"Error sending deployment notification: {e}")
+
+    def get_deployment_info(self):
+        """Get deployment information for notifications."""
+        import platform
+
+        # Detect environment
+        environment = "Unknown"
+        if os.getenv('RAILWAY_ENVIRONMENT'):
+            environment = f"Railway ({os.getenv('RAILWAY_ENVIRONMENT', 'production')})"
+        elif os.getenv('HEROKU_APP_NAME'):
+            environment = f"Heroku ({os.getenv('HEROKU_APP_NAME')})"
+        elif os.getenv('RENDER_SERVICE_NAME'):
+            environment = f"Render ({os.getenv('RENDER_SERVICE_NAME')})"
+        elif os.getenv('VERCEL_ENV'):
+            environment = f"Vercel ({os.getenv('VERCEL_ENV')})"
+        else:
+            environment = f"Local ({platform.system()})"
+
+        # Get version info
+        version = os.getenv('BOT_VERSION', 'v1.0.0')
+
+        # Get mode
+        mode = os.getenv('BOT_MODE', 'test').upper()
+
+        return {
+            'environment': environment,
+            'version': version,
+            'mode': mode,
+            'timestamp': datetime.now().isoformat()
+        }
+
+    def send_shutdown_notification(self):
+        """Send notification when bot is shutting down."""
+        try:
+            message = f"""🛑 *Bot Shutdown Notification*
+
+⏰ Time: {datetime.now().strftime('%Y-%m-%d %H:%M:%S UTC')}
+🤖 Status: Bot Shutting Down
+📊 Reason: Graceful Shutdown
+
+ℹ️ Daily Mitzvah Bot will restart automatically.
+
+_—Deployment Monitor_"""
+
+            # Send immediately
+            self.send_to_group(message)
+            logging.info("Shutdown notification sent")
+
+        except Exception as e:
+            logging.error(f"Error sending shutdown notification: {e}")
+
     def run_scheduler(self):
         """Run the daily scheduler."""
+        # Send deployment notification on startup
+        if os.getenv('SEND_DEPLOY_NOTIFICATIONS', 'true').lower() == 'true':
+            self.send_deployment_notification()
+
         # Schedule daily message at 8:00 AM
-        schedule.every().day.at("11:30").do(self.send_daily_mitzvah)
-        logging.info("Daily schedule set for 11:30 AM")
+        schedule.every().day.at("08:00").do(self.send_daily_mitzvah)
+        logging.info("Daily schedule set for 8:00 AM")
 
         # Keep running
         while True:
@@ -206,26 +286,49 @@ def main():
 
         # Check mode
         mode = os.getenv('BOT_MODE', 'test').lower()
+        send_notifications = os.getenv('SEND_DEPLOY_NOTIFICATIONS', 'true').lower() == 'true'
 
         if mode == 'test':
             # Test mode - send one message
             logging.info("Running in TEST mode - sending one message")
+            if send_notifications:
+                bot.send_deployment_notification()
             bot.send_daily_mitzvah()
 
         elif mode == 'scheduler':
             # Scheduler mode - run continuously
             logging.info("Running in SCHEDULER mode - daily messages at 8 AM")
-            bot.run_scheduler()
+            bot.run_scheduler()  # This will send deployment notification internally
 
         else:
             # Default - send today's message once
             logging.info("Sending today's message once")
+            if send_notifications:
+                bot.send_deployment_notification()
             bot.send_daily_mitzvah()
 
     except KeyboardInterrupt:
         logging.info("Bot stopped by user")
+        try:
+            if send_notifications:
+                bot.send_shutdown_notification()
+        except:
+            pass
     except Exception as e:
         logging.error(f"Bot error: {e}")
+        try:
+            if send_notifications and 'bot' in locals():
+                error_message = f"""❌ *Bot Error Notification*
+
+⏰ Time: {datetime.now().strftime('%Y-%m-%d %H:%M:%S UTC')}
+🚨 Error: {str(e)[:100]}...
+🔄 Status: Bot will restart automatically
+
+_—Error Monitor_"""
+                bot.send_to_group(error_message)
+        except:
+            pass
+        raise
 
 if __name__ == "__main__":
     main()

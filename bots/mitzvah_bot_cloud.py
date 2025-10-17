@@ -180,8 +180,95 @@ _—Daily Mitzvah Bot_"""
 
         logging.info(f"Daily mitzvah sent to {success_count}/{len(self.recipients)} recipients")
 
+    def send_deployment_notification(self):
+        """Send a notification when the bot is deployed/started."""
+        if not self.recipients:
+            return
+
+        try:
+            deploy_info = self.get_deployment_info()
+            message = f"""🚀 *Bot Deployment Notification*
+
+⏰ Time: {datetime.now().strftime('%Y-%m-%d %H:%M:%S UTC')}
+🤖 Status: Bot Started Successfully
+🌐 Environment: {deploy_info['environment']}
+📝 Version: {deploy_info['version']}
+🔧 Mode: {deploy_info['mode']}
+👥 Recipients: {len(self.recipients)}
+
+✅ Daily Mitzvah Bot is now running!
+
+_—Deployment Monitor_"""
+
+            # Send to all recipients
+            success_count = 0
+            for recipient in self.recipients:
+                if self.send_to_recipient(recipient, message):
+                    success_count += 1
+                time.sleep(1)  # Rate limiting
+
+            logging.info(f"Deployment notification sent to {success_count}/{len(self.recipients)} recipients")
+
+        except Exception as e:
+            logging.error(f"Error sending deployment notification: {e}")
+
+    def get_deployment_info(self):
+        """Get deployment information for notifications."""
+        import platform
+
+        # Detect environment
+        environment = "Unknown"
+        if os.getenv('RAILWAY_ENVIRONMENT'):
+            environment = f"Railway ({os.getenv('RAILWAY_ENVIRONMENT', 'production')})"
+        elif os.getenv('HEROKU_APP_NAME'):
+            environment = f"Heroku ({os.getenv('HEROKU_APP_NAME')})"
+        elif os.getenv('RENDER_SERVICE_NAME'):
+            environment = f"Render ({os.getenv('RENDER_SERVICE_NAME')})"
+        elif os.getenv('VERCEL_ENV'):
+            environment = f"Vercel ({os.getenv('VERCEL_ENV')})"
+        else:
+            environment = f"Local ({platform.system()})"
+
+        # Get version info
+        version = os.getenv('BOT_VERSION', 'v1.0.0')
+
+        # Get mode
+        mode = os.getenv('DEPLOY_MODE', 'scheduler').upper()
+
+        return {
+            'environment': environment,
+            'version': version,
+            'mode': mode,
+            'timestamp': datetime.now().isoformat()
+        }
+
+    def send_error_notification(self, error_message):
+        """Send notification when an error occurs."""
+        if not self.recipients:
+            return
+
+        try:
+            message = f"""❌ *Bot Error Notification*
+
+⏰ Time: {datetime.now().strftime('%Y-%m-%d %H:%M:%S UTC')}
+🚨 Error: {str(error_message)[:100]}...
+🔄 Status: Bot will restart automatically
+
+_—Error Monitor_"""
+
+            # Send to first recipient only to avoid spam
+            if self.recipients:
+                self.send_to_recipient(self.recipients[0], message)
+
+        except Exception as e:
+            logging.error(f"Error sending error notification: {e}")
+
     def run_scheduler(self):
         """Run the daily scheduler."""
+        # Send deployment notification on startup
+        if os.getenv('SEND_DEPLOY_NOTIFICATIONS', 'true').lower() == 'true':
+            self.send_deployment_notification()
+
         # Schedule daily message at 8:00 AM
         schedule.every().day.at("08:00").do(self.send_daily_mitzvah)
         logging.info("Daily schedule set for 8:00 AM UTC")
@@ -201,27 +288,37 @@ def main():
 
         # Check deployment mode
         deploy_mode = os.getenv('DEPLOY_MODE', 'scheduler').lower()
+        send_notifications = os.getenv('SEND_DEPLOY_NOTIFICATIONS', 'true').lower() == 'true'
 
         if deploy_mode == 'test':
             # Test mode - send one message and exit
             logging.info("Running in TEST mode")
+            if send_notifications:
+                bot.send_deployment_notification()
             bot.send_daily_mitzvah()
 
         elif deploy_mode == 'once':
             # Send today's message once and exit
             logging.info("Running in ONCE mode")
+            if send_notifications:
+                bot.send_deployment_notification()
             bot.send_daily_mitzvah()
 
         else:
             # Default scheduler mode
             logging.info("Running in SCHEDULER mode")
             logging.info("Bot will send daily messages at 8:00 AM UTC")
-            bot.run_scheduler()
+            bot.run_scheduler()  # This will send deployment notification internally
 
     except KeyboardInterrupt:
         logging.info("Bot stopped by user")
     except Exception as e:
         logging.error(f"Bot error: {e}")
+        try:
+            if send_notifications and 'bot' in locals():
+                bot.send_error_notification(e)
+        except:
+            pass
         raise
 
 if __name__ == "__main__":
