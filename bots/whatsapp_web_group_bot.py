@@ -263,9 +263,9 @@ _—Deployment Monitor_"""
         if os.getenv('SEND_DEPLOY_NOTIFICATIONS', 'true').lower() == 'true':
             self.send_deployment_notification()
 
-        # Schedule daily message at 8:00 AM
-        schedule.every().day.at("08:00").do(self.send_daily_mitzvah)
-        logging.info("Daily schedule set for 8:00 AM")
+        # Schedule daily message at 12:35 PM
+        schedule.every().day.at("12:35").do(self.send_daily_mitzvah)
+        logging.info("Daily schedule set for 12:35 PM")
 
         # Keep running
         while True:
