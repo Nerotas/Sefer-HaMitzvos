@@ -478,6 +478,21 @@ class MitzvahLambdaBot:
     #     # Default case
     #     return f"{base_url}Positive_Commandments.{mitzvos}?lang=bi"
 
+    def format_mitzvah_number(self, mitzvah_type_number):
+        """Format mitzvah number for display (e.g., 'Positive 39' -> 'Positive Mitzvah 39')"""
+        if 'Positive' in mitzvah_type_number:
+            number = mitzvah_type_number.replace('Positive ', '')
+            return f"Positive Mitzvah {number}"
+        elif 'Negative' in mitzvah_type_number:
+            number = mitzvah_type_number.replace('Negative ', '')
+            return f"Negative Mitzvah {number}"
+        elif 'Intro' in mitzvah_type_number:
+            return mitzvah_type_number  # Keep Intro format as is
+        elif 'Conclusion' in mitzvah_type_number:
+            return mitzvah_type_number  # Keep Conclusion format as is
+        else:
+            return f"Mitzvah {mitzvah_type_number}"
+
     def format_message(self, mitzvah_data):
         """Format the WhatsApp message with holiday consolidation support."""
         date_formatted = datetime.strptime(mitzvah_data['date'], '%Y-%m-%d').strftime('%A, %B %d, %Y')
@@ -537,7 +552,8 @@ _—Daily Mitzvah Bot_"""
                     if i < len(mitzvah_sefaria_links) and mitzvah_sefaria_links[i]:
                         sefaria_text = f"\n📖 Learn more: {mitzvah_sefaria_links[i]}"
 
-                    message += f"""🔢 *Mitzvah #{num}*
+                    formatted_mitzvah_num = self.format_mitzvah_number(num)
+                    message += f"""🔢 *{formatted_mitzvah_num}*
 {title}
 
 📚 Source: {source}{sefaria_text}
@@ -555,7 +571,8 @@ _—Daily Mitzvah Bot_"""
 _—Daily Mitzvah Bot_"""
             else:
                 # Single mitzvah
-                mitzvah_text = f"*Mitzvah #{mitzvah_nums}*"
+                formatted_mitzvah_num = self.format_mitzvah_number(mitzvah_nums)
+                mitzvah_text = f"*{formatted_mitzvah_num}*"
 
                 # Build header with holiday context
                 header = f"🕊️ *Sefer HaMitzvos Daily Study* 📚\n\n📅 {date_formatted}"
