@@ -274,9 +274,9 @@ _—Deployment Monitor_"""
         if os.getenv('SEND_DEPLOY_NOTIFICATIONS', 'true').lower() == 'true':
             self.send_deployment_notification()
 
-        # Schedule daily message at 1:00 PM CST
-        schedule.every().day.at("12:45").do(self.send_daily_mitzvah)
-        logging.info("Daily schedule set for 12:45 PM CST")
+        # Schedule daily message at 1:10 PM CST
+        schedule.every().day.at("13:10").do(self.send_daily_mitzvah)
+        logging.info("Daily schedule set for 1:10 PM CST")
 
         # Keep running
         while True:
@@ -304,7 +304,7 @@ def main():
 
         elif mode == 'scheduler':
             # Scheduler mode - run continuously
-            logging.info("Running in SCHEDULER mode - daily messages at 8 AM")
+            logging.info("Running in SCHEDULER mode - daily messages at 1:00 PM CST")
             bot.run_scheduler()  # This will send deployment notification internally
 
         else:

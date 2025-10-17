@@ -4,7 +4,7 @@
     "builder": "NIXPACKS"
   },
   "deploy": {
-    "startCommand": "python bots/whatsapp_web_group_bot.py",
+    "startCommand": "python bots/mitzvah_bot_cloud.py",
     "restartPolicyType": "ON_FAILURE",
     "restartPolicyMaxRetries": 10
   }

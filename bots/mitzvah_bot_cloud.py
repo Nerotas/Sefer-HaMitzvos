@@ -19,6 +19,11 @@ try:
 except ImportError:
     logging.warning("python-dotenv not installed, using system environment variables only")
 
+# Set timezone for Railway deployment
+if os.getenv('TZ'):
+    os.environ['TZ'] = os.getenv('TZ')
+    time.tzset() if hasattr(time, 'tzset') else None
+
 # Setup logging
 logging.basicConfig(
     level=logging.INFO,
@@ -50,6 +55,12 @@ class MitzvahWhatsAppBotCloud:
             logging.warning("No recipients configured")
         else:
             logging.info(f"Loaded {len(self.recipients)} recipients")
+
+        # Log timezone info for debugging
+        current_time = datetime.now()
+        logging.info(f"Current local time: {current_time}")
+        logging.info(f"Timezone: {time.tzname}")
+        logging.info(f"Scheduled delivery: 1:00 PM daily ({current_time.strftime('%Z')} timezone)")
 
         self.csv_file = 'Schedule_Corrected.csv'
 
@@ -276,9 +287,9 @@ _—Error Monitor_"""
         if os.getenv('SEND_DEPLOY_NOTIFICATIONS', 'true').lower() == 'true':
             self.send_deployment_notification()
 
-        # Schedule daily message at 8:00 AM
-        schedule.every().day.at("08:00").do(self.send_daily_mitzvah)
-        logging.info("Daily schedule set for 8:00 AM UTC")
+        # Schedule daily message at 1:08 PM CST (TEST - 2 minutes from now)
+        schedule.every().day.at("13:08").do(self.send_daily_mitzvah)
+        logging.info("Daily schedule set for 1:08 PM CST (TEST MODE)")
 
         # Keep running
         while True:
