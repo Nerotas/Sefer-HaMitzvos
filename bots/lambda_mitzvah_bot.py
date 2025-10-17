@@ -358,7 +358,8 @@ class MitzvahLambdaBot:
                     'date': row['Date'].strip(),
                     'mitzvos': row['Mitzvos'].strip(),
                     'title': row['English Title(s)'].strip(),
-                    'source': row['Source'].strip()
+                    'source': row['Source'].strip(),
+                    'sefaria_link': row.get('Sefaria_Link', '')
                 }
         return None
 
@@ -373,11 +374,29 @@ class MitzvahLambdaBot:
         # Combine sources
         combined_sources = f"{first_entry['source']} & {second_entry['source']}"
 
+        # Combine Sefaria links
+        first_link = first_entry.get('sefaria_link', '')
+        second_link = second_entry.get('sefaria_link', '')
+
+        combined_sefaria_links = []
+        if first_link:
+            if isinstance(first_link, list):
+                combined_sefaria_links.extend(first_link)
+            else:
+                combined_sefaria_links.append(first_link)
+
+        if second_link:
+            if isinstance(second_link, list):
+                combined_sefaria_links.extend(second_link)
+            else:
+                combined_sefaria_links.append(second_link)
+
         return {
             'date': first_entry['date'],
             'mitzvos': combined_mitzvos,
             'title': combined_titles,
             'source': combined_sources,
+            'sefaria_link': combined_sefaria_links,
             'consolidation_reason': reason
         }
 
@@ -467,12 +486,17 @@ class MitzvahLambdaBot:
         is_consolidated = 'consolidation_reason' in mitzvah_data
         consolidation_reason = mitzvah_data.get('consolidation_reason', '')
 
-        # TODO: Re-enable Sefaria links once accuracy is verified
-        # Generate Sefaria link
-        # sefaria_link = self.generate_sefaria_link(mitzvah_data['mitzvos'], mitzvah_data['title'])
+        # Get Sefaria links from the data
+        sefaria_links = mitzvah_data.get('sefaria_link', [])
+        if isinstance(sefaria_links, str):
+            sefaria_links = [sefaria_links]
 
         if mitzvah_data['mitzvos'].startswith('Intro'):
             # Introduction/Shorashim message
+            sefaria_text = ""
+            if sefaria_links and sefaria_links[0]:
+                sefaria_text = f"\n📖 Learn more: {sefaria_links[0]}"
+
             message = f"""🕊️ *Sefer HaMitzvos Daily Study* 📚
 
 📅 {date_formatted}
@@ -480,7 +504,7 @@ class MitzvahLambdaBot:
 📖 *{mitzvah_data['mitzvos']}*
 _{mitzvah_data['title']}_
 
-📚 Source: {mitzvah_data['source']}
+📚 Source: {mitzvah_data['source']}{sefaria_text}
 
 May your Torah study illuminate your path! ✨🙏
 
@@ -496,6 +520,9 @@ _—Daily Mitzvah Bot_"""
                 titles = [title.strip() for title in mitzvah_data['title'].split(' & ')]
                 sources = [source.strip() for source in mitzvah_data['source'].split(' & ')]
 
+                # Handle Sefaria links for multiple mitzvot
+                mitzvah_sefaria_links = sefaria_links if len(sefaria_links) > 1 else [sefaria_links[0] if sefaria_links else ''] * len(numbers)
+
                 # Build message header with holiday context
                 header = f"🕊️ *Sefer HaMitzvos Daily Study* 📚\n\n📅 {date_formatted}"
 
@@ -506,11 +533,14 @@ _—Daily Mitzvah Bot_"""
 
                 # Add each mitzvah separately
                 for i, (num, title, source) in enumerate(zip(numbers, titles, sources)):
+                    sefaria_text = ""
+                    if i < len(mitzvah_sefaria_links) and mitzvah_sefaria_links[i]:
+                        sefaria_text = f"\n📖 Learn more: {mitzvah_sefaria_links[i]}"
+
                     message += f"""🔢 *Mitzvah #{num}*
 {title}
 
-📚 Source: {source}
-📖 Learn more: sefaria link coming soon!
+📚 Source: {source}{sefaria_text}
 
 """
 
@@ -533,13 +563,17 @@ _—Daily Mitzvah Bot_"""
                 if is_consolidated:
                     header += f"\n🎊 *Special Holiday Schedule* - {consolidation_reason}"
 
+                # Add Sefaria link for single mitzvah
+                sefaria_text = ""
+                if sefaria_links and sefaria_links[0]:
+                    sefaria_text = f"\n📖 Learn more: {sefaria_links[0]}"
+
                 message = f"""{header}
 
 🔢 {mitzvah_text}
 _{mitzvah_data['title']}_
 
-📚 Source: {mitzvah_data['source']}
-📖 Learn more: sefaria link coming soon!
+📚 Source: {mitzvah_data['source']}{sefaria_text}
 
 Fulfill this mitzvah with joy and intention! 💫🙏
 
