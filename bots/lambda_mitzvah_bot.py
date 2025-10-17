@@ -126,6 +126,12 @@ class MitzvahLambdaBot:
                 'Mitzvos': '1',
                 'English Title(s)': 'Belief in G-d',
                 'Source': 'Devarim 6:4'
+            },
+            {
+                'Date': '2025-10-20',
+                'Mitzvos': '76, 77',
+                'English Title(s)': 'To say the Shema twice daily & To serve the Almighty with prayer daily',
+                'Source': 'Devarim 6:7 & Shemos 23:25'
             }
             # More entries would be embedded here in production
         ]
@@ -228,16 +234,44 @@ _{mitzvah_data['title']}_
 
 May your Torah study illuminate your path! ✨🙏
 
-_—Daily Mitzvah Bot (AWS Lambda)_"""
+_—Daily Mitzvah Bot_"""
         else:
             # Regular mitzvah message
-            mitzvah_num = mitzvah_data['mitzvos']
-            if ',' in mitzvah_num:
-                mitzvah_text = f"*Mitzvot #{mitzvah_num}*"
-            else:
-                mitzvah_text = f"*Mitzvah #{mitzvah_num}*"
+            mitzvah_nums = mitzvah_data['mitzvos']
 
-            message = f"""🕊️ *Sefer HaMitzvos Daily Study* 📚
+            # Check if there are multiple mitzvot
+            if ',' in mitzvah_nums:
+                # Parse multiple mitzvot
+                numbers = [num.strip() for num in mitzvah_nums.split(',')]
+                titles = [title.strip() for title in mitzvah_data['title'].split(' & ')]
+                sources = [source.strip() for source in mitzvah_data['source'].split(' & ')]
+
+                # Build message header
+                message = f"""🕊️ *Sefer HaMitzvos Daily Study* 📚
+
+📅 {date_formatted}
+
+"""
+
+                # Add each mitzvah separately
+                for i, (num, title, source) in enumerate(zip(numbers, titles, sources)):
+                    message += f"""🔢 *Mitzvah #{num}*
+{title}
+
+📚 Source: {source}
+📖 Learn more: sefaria link coming soon!
+
+"""
+
+                # Add closing
+                message += """Fulfill these mitzvot with joy and intention! 💫🙏
+
+_—Daily Mitzvah Bot_"""
+            else:
+                # Single mitzvah
+                mitzvah_text = f"*Mitzvah #{mitzvah_nums}*"
+
+                message = f"""🕊️ *Sefer HaMitzvos Daily Study* 📚
 
 📅 {date_formatted}
 
@@ -245,10 +279,11 @@ _—Daily Mitzvah Bot (AWS Lambda)_"""
 _{mitzvah_data['title']}_
 
 📚 Source: {mitzvah_data['source']}
+📖 Learn more: sefaria link coming soon!
 
 Fulfill this mitzvah with joy and intention! 💫🙏
 
-_—Daily Mitzvah Bot (AWS Lambda)_"""
+_—Daily Mitzvah Bot_"""
 
         return message
 

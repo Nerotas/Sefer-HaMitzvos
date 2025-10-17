@@ -11,8 +11,7 @@ This project provides an AWS Lambda-powered WhatsApp bot that sends daily study 
 - 🤖 **Serverless Architecture** - AWS Lambda for zero-maintenance automation
 - 📱 **WhatsApp Integration** - Twilio API for reliable message delivery
 - 📊 **354-Day Schedule** - All 613 mitzvot organized in annual cycle
-- � **Sefaria Integration** - Direct links to study each mitzvah on Sefaria.org
-- �🕐 **Custom Timing** - Configurable daily delivery (default: 1:10 PM CST)
+- � **Custom Timing** - Configurable daily delivery (default: 1:10 PM CST)
 - 💰 **Cost-Effective** - Runs for ~$0.001/month on AWS free tier
 - 📖 **Hebrew Sources** - Biblical references with English translations
 - 🔄 **Auto-Cycling** - Automatically restarts after completing all 613 mitzvot
@@ -59,8 +58,6 @@ This project provides an AWS Lambda-powered WhatsApp bot that sends daily study 
 To know there is a G‑d
 
 📚 Source: Shemos 20:2
-
-🔗 Study on Sefaria: https://www.sefaria.org/Sefer_HaMitzvot%2C_Positive_Commandments.1?lang=bi
 
 Fulfill this mitzvah with joy and intention! 💫🙏
 
