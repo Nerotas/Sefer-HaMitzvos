@@ -1,0 +1,49 @@
+name: Deploy with AWS SAM
+
+on:
+  push:
+    branches: [main]
+    paths:
+      - "bots/lambda_mitzvah_bot.py"
+      - "template.yaml"
+  workflow_dispatch: # Allow manual trigger
+
+jobs:
+  deploy:
+    runs-on: ubuntu-latest
+
+    steps:
+      - name: Checkout code
+        uses: actions/checkout@v4
+
+      - name: Set up Python
+        uses: actions/setup-python@v4
+        with:
+          python-version: "3.11"
+
+      - name: Set up AWS SAM
+        uses: aws-actions/setup-sam@v2
+
+      - name: Configure AWS credentials
+        uses: aws-actions/configure-aws-credentials@v4
+        with:
+          aws-access-key-id: ${{ secrets.AWS_ACCESS_KEY_ID }}
+          aws-secret-access-key: ${{ secrets.AWS_SECRET_ACCESS_KEY }}
+          aws-region: ${{ secrets.AWS_REGION }}
+
+      - name: Build SAM application
+        run: sam build
+
+      - name: Deploy SAM application
+        run: |
+          sam deploy \
+            --no-confirm-changeset \
+            --no-fail-on-empty-changeset \
+            --stack-name daily-mitzvah-bot-stack \
+            --parameter-overrides \
+              TwilioAccountSid=${{ secrets.TWILIO_ACCOUNT_SID }} \
+              TwilioAuthToken=${{ secrets.TWILIO_AUTH_TOKEN }} \
+              TwilioWhatsAppNumber=${{ secrets.TWILIO_WHATSAPP_NUMBER }} \
+              Recipients="${{ secrets.RECIPIENTS }}" \
+            --capabilities CAPABILITY_IAM \
+            --region ${{ secrets.AWS_REGION }}

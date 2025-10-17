@@ -1,0 +1,64 @@
+AWSTemplateFormatVersion: "2010-09-09"
+Transform: AWS::Serverless-2016-10-31
+Description: Daily Mitzvah Bot Lambda Function
+
+Globals:
+  Function:
+    Timeout: 30
+    Runtime: python3.11
+
+Parameters:
+  TwilioAccountSid:
+    Type: String
+    Description: Twilio Account SID
+    NoEcho: true
+
+  TwilioAuthToken:
+    Type: String
+    Description: Twilio Auth Token
+    NoEcho: true
+
+  TwilioWhatsAppNumber:
+    Type: String
+    Description: Twilio WhatsApp Number
+    Default: "+14155238886"
+
+  Recipients:
+    Type: String
+    Description: Comma-separated list of recipient WhatsApp numbers
+
+Resources:
+  DailyMitzvahBot:
+    Type: AWS::Serverless::Function
+    Properties:
+      FunctionName: daily-mitzvah-bot
+      CodeUri: bots/
+      Handler: lambda_mitzvah_bot.lambda_handler
+      Environment:
+        Variables:
+          TWILIO_ACCOUNT_SID: !Ref TwilioAccountSid
+          TWILIO_AUTH_TOKEN: !Ref TwilioAuthToken
+          TWILIO_WHATSAPP_NUMBER: !Ref TwilioWhatsAppNumber
+          RECIPIENTS: !Ref Recipients
+      Events:
+        DailySchedule:
+          Type: Schedule
+          Properties:
+            Schedule: "cron(10 18 * * ? *)" # 1:10 PM CST daily
+            Description: Daily mitzvah message trigger
+            Enabled: true
+
+  DailyMitzvahBotLogGroup:
+    Type: AWS::Logs::LogGroup
+    Properties:
+      LogGroupName: !Sub "/aws/lambda/${DailyMitzvahBot}"
+      RetentionInDays: 14
+
+Outputs:
+  DailyMitzvahBotFunction:
+    Description: Daily Mitzvah Bot Lambda Function ARN
+    Value: !GetAtt DailyMitzvahBot.Arn
+
+  DailyMitzvahBotIamRole:
+    Description: Implicit IAM Role created for Daily Mitzvah Bot function
+    Value: !GetAtt DailyMitzvahBotRole.Arn

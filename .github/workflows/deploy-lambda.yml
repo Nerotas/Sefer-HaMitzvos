@@ -1,0 +1,74 @@
+name: Deploy Lambda Function
+
+on:
+  push:
+    branches: [main]
+    paths:
+      - "bots/lambda_mitzvah_bot.py"
+      - "Schedule.csv"
+      - ".github/workflows/deploy-lambda.yml"
+  pull_request:
+    branches: [main]
+    paths:
+      - "bots/lambda_mitzvah_bot.py"
+      - "Schedule.csv"
+
+jobs:
+  deploy:
+    runs-on: ubuntu-latest
+
+    steps:
+      - name: Checkout code
+        uses: actions/checkout@v4
+
+      - name: Set up Python
+        uses: actions/setup-python@v4
+        with:
+          python-version: "3.11"
+
+      - name: Install dependencies
+        run: |
+          python -m pip install --upgrade pip
+          pip install twilio requests
+
+      - name: Create Lambda package
+        run: |
+          mkdir lambda_package
+          cp bots/lambda_mitzvah_bot.py lambda_package/
+          cp Schedule.csv lambda_package/ 2>/dev/null || echo "Schedule.csv not found, using embedded data"
+          pip install twilio requests -t lambda_package/
+          cd lambda_package
+          zip -r ../mitzvah_bot_lambda.zip .
+
+      - name: Configure AWS credentials
+        uses: aws-actions/configure-aws-credentials@v4
+        with:
+          aws-access-key-id: ${{ secrets.AWS_ACCESS_KEY_ID }}
+          aws-secret-access-key: ${{ secrets.AWS_SECRET_ACCESS_KEY }}
+          aws-region: ${{ secrets.AWS_REGION }}
+
+      - name: Deploy to Lambda
+        run: |
+          aws lambda update-function-code \
+            --function-name ${{ secrets.LAMBDA_FUNCTION_NAME }} \
+            --zip-file fileb://mitzvah_bot_lambda.zip
+
+      - name: Update Lambda configuration (if needed)
+        run: |
+          aws lambda update-function-configuration \
+            --function-name ${{ secrets.LAMBDA_FUNCTION_NAME }} \
+            --timeout 30 \
+            --environment Variables="{
+              TWILIO_ACCOUNT_SID=${{ secrets.TWILIO_ACCOUNT_SID }},
+              TWILIO_AUTH_TOKEN=${{ secrets.TWILIO_AUTH_TOKEN }},
+              TWILIO_WHATSAPP_NUMBER=${{ secrets.TWILIO_WHATSAPP_NUMBER }},
+              RECIPIENTS=${{ secrets.RECIPIENTS }}
+            }"
+
+      - name: Test Lambda function
+        run: |
+          aws lambda invoke \
+            --function-name ${{ secrets.LAMBDA_FUNCTION_NAME }} \
+            --payload '{}' \
+            response.json
+          cat response.json

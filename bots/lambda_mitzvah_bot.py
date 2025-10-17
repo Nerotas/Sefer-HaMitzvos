@@ -213,7 +213,9 @@ class MitzvahLambdaBot:
     #             return f"{base_url}Negative_Commandments.{negative_num}?lang=bi"
     #
     #     # Default case
-    #     return f"{base_url}Positive_Commandments.{mitzvos}?lang=bi"    def format_message(self, mitzvah_data):
+    #     return f"{base_url}Positive_Commandments.{mitzvos}?lang=bi"
+
+    def format_message(self, mitzvah_data):
         """Format the WhatsApp message."""
         date_formatted = datetime.strptime(mitzvah_data['date'], '%Y-%m-%d').strftime('%A, %B %d, %Y')
 
