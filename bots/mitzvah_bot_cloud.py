@@ -287,9 +287,9 @@ _—Error Monitor_"""
         if os.getenv('SEND_DEPLOY_NOTIFICATIONS', 'true').lower() == 'true':
             self.send_deployment_notification()
 
-        # Schedule daily message at 1:08 PM CST (TEST - 2 minutes from now)
-        schedule.every().day.at("13:08").do(self.send_daily_mitzvah)
-        logging.info("Daily schedule set for 1:08 PM CST (TEST MODE)")
+        # Schedule daily message at 1:10 PM CST (TEST - same as WhatsApp Web bot)
+        schedule.every().day.at("13:10").do(self.send_daily_mitzvah)
+        logging.info("Daily schedule set for 1:10 PM CST (TEST MODE)")
 
         # Keep running
         while True:
