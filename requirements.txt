@@ -7,5 +7,8 @@ python-dotenv==1.0.0
 # For simple WhatsApp Web automation (no API needed)
 pywhatkit==5.4
 
+# For Telegram bot (alternative)
+python-telegram-bot==20.6
+
 # Common dependencies
 schedule==1.2.0

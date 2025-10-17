@@ -7,7 +7,6 @@ Telegram Mitzvah Bot - Free and Reliable Alternative
 import csv
 import os
 from datetime import datetime, timedelta
-import schedule
 import time
 import logging
 import asyncio
@@ -164,22 +163,20 @@ _—Daily Mitzvah Bot_"""
 
         logging.info(f"Daily mitzvah sent to {success_count}/{len(self.chat_ids)} chats")
 
-    def run_scheduler(self):
-        """Run the daily scheduler."""
-        async def scheduled_send():
-            await self.send_daily_mitzvah()
-
-        def sync_send():
-            asyncio.run(scheduled_send())
-
-        # Schedule daily message at 8:00 AM
-        schedule.every().day.at("08:00").do(sync_send)
+    async def run_scheduler(self):
+        """Run the daily scheduler using async approach."""
         logging.info("Daily schedule set for 8:00 AM UTC")
 
-        # Keep running
         while True:
-            schedule.run_pending()
-            time.sleep(60)
+            now = datetime.now()
+            # Check if it's 8:00 AM
+            if now.hour == 8 and now.minute == 0:
+                await self.send_daily_mitzvah()
+                # Wait 60 seconds to avoid sending multiple messages in the same minute
+                await asyncio.sleep(60)
+            else:
+                # Check every 30 seconds
+                await asyncio.sleep(30)
 
 def main():
     """Main function."""
@@ -206,7 +203,7 @@ def main():
             # Default scheduler mode
             logging.info("Running in SCHEDULER mode")
             logging.info("Bot will send daily messages at 8:00 AM UTC")
-            bot.run_scheduler()
+            asyncio.run(bot.run_scheduler())
 
     except KeyboardInterrupt:
         logging.info("Bot stopped by user")
