@@ -13,6 +13,11 @@ import schedule
 import logging
 import os
 
+# Set timezone for Railway deployment
+if os.getenv('TZ'):
+    os.environ['TZ'] = os.getenv('TZ')
+    time.tzset() if hasattr(time, 'tzset') else None
+
 # Setup logging
 logging.basicConfig(level=logging.INFO, format='%(asctime)s - %(levelname)s - %(message)s')
 
@@ -31,6 +36,12 @@ class WhatsAppWebGroupBot:
         ]
 
         logging.info(f"WhatsApp Web Bot initialized for personal messaging to: {self.individual_recipients}")
+
+        # Log timezone info for debugging
+        current_time = datetime.now()
+        logging.info(f"Current local time: {current_time}")
+        logging.info(f"Timezone: {time.tzname}")
+        logging.info(f"Scheduled delivery: 1:00 PM daily ({current_time.strftime('%Z')} timezone)")
 
     def load_mitzvah_for_date(self, target_date=None):
         """Load mitzvah for specific date or today."""
@@ -263,9 +274,9 @@ _—Deployment Monitor_"""
         if os.getenv('SEND_DEPLOY_NOTIFICATIONS', 'true').lower() == 'true':
             self.send_deployment_notification()
 
-        # Schedule daily message at 12:35 PM
-        schedule.every().day.at("12:35").do(self.send_daily_mitzvah)
-        logging.info("Daily schedule set for 12:35 PM")
+        # Schedule daily message at 1:00 PM CST
+        schedule.every().day.at("12:45").do(self.send_daily_mitzvah)
+        logging.info("Daily schedule set for 12:45 PM CST")
 
         # Keep running
         while True:
