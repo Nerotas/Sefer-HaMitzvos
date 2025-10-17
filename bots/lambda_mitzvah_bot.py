@@ -114,13 +114,18 @@ class MitzvahLambdaBot:
             import csv
             import os
 
-            # Try to load from the complete CSV schedule
-            csv_path = 'Schedule_Complete_Sefer_HaMitzvos.csv'
-            if os.path.exists(csv_path):
-                logger.info("Loading schedule from CSV file")
-                return self.load_from_csv(csv_path)
+            # Try to load from the enhanced CSV schedule with biblical sources first
+            enhanced_csv_path = 'Schedule_Complete_Sefer_HaMitzvos_WithBiblical.csv'
+            original_csv_path = 'Schedule_Complete_Sefer_HaMitzvos.csv'
+
+            if os.path.exists(enhanced_csv_path):
+                logger.info("Loading schedule from enhanced CSV file with biblical sources")
+                return self.load_from_csv(enhanced_csv_path)
+            elif os.path.exists(original_csv_path):
+                logger.info("Loading schedule from original CSV file")
+                return self.load_from_csv(original_csv_path)
             else:
-                logger.info("CSV file not found, using embedded schedule data")
+                logger.info("CSV files not found, using embedded schedule data")
                 return self.get_embedded_schedule()
         except Exception as e:
             logger.warning(f"Failed to load from CSV: {e}, using embedded data")
@@ -142,7 +147,8 @@ class MitzvahLambdaBot:
                 daily_entries[row['Date']].append({
                     'Mitzvah_Type_Number': row['Mitzvah_Type_Number'],
                     'Summary': row['Summary'],
-                    'Sefaria_Link': row['Sefaria_Link']
+                    'Sefaria_Link': row['Sefaria_Link'],
+                    'Biblical_Source': row.get('Biblical_Source', '')
                 })
 
         # Convert to the format expected by lambda bot
@@ -150,11 +156,13 @@ class MitzvahLambdaBot:
             mitzvos_numbers = []
             titles = []
             sefaria_links = []
+            biblical_sources = []
 
             for entry in entries:
                 mitzvos_numbers.append(entry['Mitzvah_Type_Number'])
                 titles.append(entry['Summary'])
                 sefaria_links.append(entry['Sefaria_Link'])
+                biblical_sources.append(entry['Biblical_Source'])
 
             # Determine source based on mitzvah types
             sources = set()
@@ -175,7 +183,8 @@ class MitzvahLambdaBot:
                 'Mitzvos': ', '.join(mitzvos_numbers),
                 'English Title(s)': ' & '.join(titles),
                 'Source': ' & '.join(sorted(sources)),
-                'Sefaria_Link': sefaria_links[0] if len(sefaria_links) == 1 else sefaria_links
+                'Sefaria_Link': sefaria_links[0] if len(sefaria_links) == 1 else sefaria_links,
+                'Biblical_Sources': biblical_sources
             }
 
             schedule_data.append(schedule_entry)
@@ -359,7 +368,8 @@ class MitzvahLambdaBot:
                     'mitzvos': row['Mitzvos'].strip(),
                     'title': row['English Title(s)'].strip(),
                     'source': row['Source'].strip(),
-                    'sefaria_link': row.get('Sefaria_Link', '')
+                    'sefaria_link': row.get('Sefaria_Link', ''),
+                    'biblical_sources': row.get('Biblical_Sources', [])
                 }
         return None
 
@@ -391,12 +401,30 @@ class MitzvahLambdaBot:
             else:
                 combined_sefaria_links.append(second_link)
 
+        # Combine biblical sources
+        first_biblical = first_entry.get('biblical_sources', [])
+        second_biblical = second_entry.get('biblical_sources', [])
+
+        combined_biblical_sources = []
+        if first_biblical:
+            if isinstance(first_biblical, list):
+                combined_biblical_sources.extend(first_biblical)
+            else:
+                combined_biblical_sources.append(first_biblical)
+
+        if second_biblical:
+            if isinstance(second_biblical, list):
+                combined_biblical_sources.extend(second_biblical)
+            else:
+                combined_biblical_sources.append(second_biblical)
+
         return {
             'date': first_entry['date'],
             'mitzvos': combined_mitzvos,
             'title': combined_titles,
             'source': combined_sources,
             'sefaria_link': combined_sefaria_links,
+            'biblical_sources': combined_biblical_sources,
             'consolidation_reason': reason
         }
 
@@ -506,6 +534,11 @@ class MitzvahLambdaBot:
         if isinstance(sefaria_links, str):
             sefaria_links = [sefaria_links]
 
+        # Get biblical sources from the data
+        biblical_sources = mitzvah_data.get('biblical_sources', [])
+        if isinstance(biblical_sources, str):
+            biblical_sources = [biblical_sources] if biblical_sources else []
+
         if mitzvah_data['mitzvos'].startswith('Intro'):
             # Introduction/Shorashim message
             sefaria_text = ""
@@ -533,7 +566,13 @@ _—Daily Mitzvah Bot_"""
                 # Parse multiple mitzvot
                 numbers = [num.strip() for num in mitzvah_nums.split(',')]
                 titles = [title.strip() for title in mitzvah_data['title'].split(' & ')]
-                sources = [source.strip() for source in mitzvah_data['source'].split(' & ')]
+                sources_raw = [source.strip() for source in mitzvah_data['source'].split(' & ')]
+
+                # Handle case where all sources are the same (duplicate the single source for each mitzvah)
+                if len(sources_raw) == 1 and len(numbers) > 1:
+                    sources = sources_raw * len(numbers)
+                else:
+                    sources = sources_raw
 
                 # Handle Sefaria links for multiple mitzvot
                 mitzvah_sefaria_links = sefaria_links if len(sefaria_links) > 1 else [sefaria_links[0] if sefaria_links else ''] * len(numbers)
@@ -552,11 +591,15 @@ _—Daily Mitzvah Bot_"""
                     if i < len(mitzvah_sefaria_links) and mitzvah_sefaria_links[i]:
                         sefaria_text = f"\n📖 Learn more: {mitzvah_sefaria_links[i]}"
 
+                    biblical_text = ""
+                    if i < len(biblical_sources) and biblical_sources[i] and biblical_sources[i] != 'N/A':
+                        biblical_text = f"\n📜 Biblical Source: {biblical_sources[i]}"
+
                     formatted_mitzvah_num = self.format_mitzvah_number(num)
                     message += f"""🔢 *{formatted_mitzvah_num}*
 {title}
 
-📚 Source: {source}{sefaria_text}
+📚 Source: {source}{biblical_text}{sefaria_text}
 
 """
 
@@ -585,12 +628,17 @@ _—Daily Mitzvah Bot_"""
                 if sefaria_links and sefaria_links[0]:
                     sefaria_text = f"\n📖 Learn more: {sefaria_links[0]}"
 
+                # Add biblical source for single mitzvah
+                biblical_text = ""
+                if biblical_sources and biblical_sources[0] and biblical_sources[0] != 'N/A':
+                    biblical_text = f"\n📜 Biblical Source: {biblical_sources[0]}"
+
                 message = f"""{header}
 
 🔢 {mitzvah_text}
 _{mitzvah_data['title']}_
 
-📚 Source: {mitzvah_data['source']}{sefaria_text}
+📚 Source: {mitzvah_data['source']}{biblical_text}{sefaria_text}
 
 Fulfill this mitzvah with joy and intention! 💫🙏
 
