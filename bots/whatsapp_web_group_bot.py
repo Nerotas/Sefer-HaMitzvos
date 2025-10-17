@@ -21,17 +21,16 @@ class WhatsAppWebGroupBot:
         # Configuration
         self.csv_file = 'Schedule_Corrected.csv'
 
-        # Group configuration - replace with your actual group ID
+        # Group configuration - disabled for personal messagings
         # Get group ID from WhatsApp Web: Open group -> F12 -> Console -> Store.Chat.getActive().id._serialized
-        self.group_id = "JpwWqLb9Dv0K8KUQsX3KcO"  # Your group code from the invite link
+        self.group_id = None  # Disabled - using personal number instead
 
-        # Alternative: Individual phone numbers (international format)
+        # Personal phone number (international format) - REPLACE WITH YOUR NUMBER
         self.individual_recipients = [
-            # "+12345678900",  # Add individual numbers if needed
-            # "+19876543210"
+            "+16613059259",  # Replace with your actual phone number (include country code)
         ]
 
-        logging.info(f"WhatsApp Web Bot initialized for group: {self.group_id}")
+        logging.info(f"WhatsApp Web Bot initialized for personal messaging to: {self.individual_recipients}")
 
     def load_mitzvah_for_date(self, target_date=None):
         """Load mitzvah for specific date or today."""
@@ -162,7 +161,7 @@ _—Daily Mitzvah Bot_"""
         return success_count > 0
 
     def send_daily_mitzvah(self, target_date=None):
-        """Send today's mitzvah to group and individuals."""
+        """Send today's mitzvah to personal number."""
         # Load today's mitzvah
         mitzvah_data = self.load_mitzvah_for_date(target_date)
 
@@ -174,14 +173,11 @@ _—Daily Mitzvah Bot_"""
         # Format message
         message = self.format_message(mitzvah_data)
 
-        # Send to group
-        group_success = self.send_to_group(message)
-
-        # Send to individuals (if any)
+        # Send to personal number
         individual_success = self.send_to_individuals(message)
 
-        if group_success or individual_success:
-            logging.info("Daily mitzvah sent successfully!")
+        if individual_success:
+            logging.info(f"Daily mitzvah sent to {len(self.individual_recipients)}/{len(self.individual_recipients)} recipients")
         else:
             logging.error("Failed to send daily mitzvah")
 
@@ -202,7 +198,7 @@ _—Daily Mitzvah Bot_"""
 _—Deployment Monitor_"""
 
             # Send immediately (in 1 minute to ensure WhatsApp Web loads)
-            success = self.send_to_group(message)
+            success = self.send_to_individuals(message)
             if success:
                 logging.info("Deployment notification sent successfully!")
             else:
@@ -255,7 +251,7 @@ _—Deployment Monitor_"""
 _—Deployment Monitor_"""
 
             # Send immediately
-            self.send_to_group(message)
+            self.send_to_individuals(message)
             logging.info("Shutdown notification sent")
 
         except Exception as e:
