@@ -30,7 +30,7 @@ This project provides:
 
 ### Organization
 - `archive/` - Reference files and master lists
-- `scripts/` - Utility scripts for corrections and verification  
+- `scripts/` - Utility scripts for corrections and verification
 - `backups/` - Backup files from corrections process
 - `docs/` - Project documentation
 
@@ -40,7 +40,7 @@ This project provides:
 The main schedule file contains:
 - **Date**: Daily assignment dates
 - **Sequential Number**: 1-630 (with holiday consolidations)
-- **Mitzvah Type & Number**: "Positive X" or "Negative X" 
+- **Mitzvah Type & Number**: "Positive X" or "Negative X"
 - **Summary**: Educational description from Sefer HaMitzvot
 - **Biblical Source**: Verified traditional source reference
 - **Sefaria Link**: Direct link to source text
@@ -62,17 +62,11 @@ Source accuracy verified through comprehensive comparison:
 
 - **Total Mitzvot**: 613 (248 positive, 365 negative)
 - **Schedule Entries**: 628 (with holiday consolidations)
-- **Source Match Rate**: 100.0% 
+- **Source Match Rate**: 100.0%
 - **Coverage Period**: Full year (365 days)
 - **Holiday Integration**: Special entries for major holidays
 
 ## 🛠️ Development
-
-### Key Corrections Applied
-1. **Tzitzit**: Corrected to `Bamidbar 15:38` (was `Devarim 10:19`)
-2. **Prayer**: Corrected to `Devarim 10:20` (was `Shemos 23:25`) 
-3. **Blessings**: Corrected to `Vayikra 19:16` (was `Devarim 8:10`)
-4. **Plus 10 total corrections** ensuring complete accuracy
 
 ### Technical Features
 - **UTF-8 BOM Handling**: Robust CSV loading across platforms
@@ -83,7 +77,7 @@ Source accuracy verified through comprehensive comparison:
 ## 📜 Sources
 
 - **Maimonides' Sefer HaMitzvot**: Educational summaries and structure
-- **Traditional Biblical Sources**: Verified against authoritative lists  
+- **Traditional Biblical Sources**: Verified against authoritative lists
 - **Sefaria Integration**: Direct links to source texts
 
 ---
