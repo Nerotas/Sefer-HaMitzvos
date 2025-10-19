@@ -11,9 +11,21 @@ from collections import defaultdict
 def load_master_sources():
     """Load all biblical sources from the master list."""
     master_sources = {}
-    
+
     print("📖 Loading master list sources...")
-    with open('archive/MitzvosMasterList.csv', 'r', encoding='utf-8') as file:
+    paths = ['archive/MitzvosMasterList.csv', 'MitzvosMasterList.csv']
+    csv_path = None
+    for p in paths:
+        try:
+            with open(p, 'r', encoding='utf-8') as _:
+                csv_path = p
+                break
+        except FileNotFoundError:
+            continue
+    if not csv_path:
+        raise FileNotFoundError("Could not find MitzvosMasterList.csv in archive/ or repo root")
+
+    with open(csv_path, 'r', encoding='utf-8') as file:
         reader = csv.DictReader(file)
         for row in reader:
             number = int(row['Number'])
@@ -23,14 +35,14 @@ def load_master_sources():
                 'reference': reference,
                 'mitzvah': mitzvah
             }
-    
-    print(f"✅ Loaded {len(master_sources)} master references")
+
+    print(f"✅ Loaded {len(master_sources)} master references from {csv_path}")
     return master_sources
 
 def load_schedule_sources():
     """Load all biblical sources from the current schedule."""
     schedule_sources = {}
-    
+
     print("📅 Loading schedule sources...")
     with open('Schedule_Complete_Sefer_HaMitzvos_WithBiblical.csv', 'r', encoding='utf-8-sig') as file:
         reader = csv.DictReader(file)
@@ -41,20 +53,20 @@ def load_schedule_sources():
             if match:
                 mitzvah_type = match.group(1)
                 mitzvah_number = int(match.group(2))
-                
+
                 # Convert to master list numbering (Positive 1-248, Negative 249-613)
                 if mitzvah_type == "Positive":
                     master_number = mitzvah_number
                 else:  # Negative
                     master_number = 248 + mitzvah_number
-                
+
                 schedule_sources[master_number] = {
                     'reference': row['Biblical_Source'].strip(),
                     'summary': row['Summary'].strip(),
                     'date': row['Date'],
                     'mitzvah_type_number': mitzvah_type_number
                 }
-    
+
     print(f"✅ Loaded {len(schedule_sources)} schedule references")
     return schedule_sources
 
@@ -62,20 +74,20 @@ def compare_sources():
     """Compare all sources between schedule and master list."""
     master_sources = load_master_sources()
     schedule_sources = load_schedule_sources()
-    
+
     print("\n🔍 Comparing all sources...")
     print("=" * 80)
-    
+
     mismatches = []
     matches = []
     missing_in_schedule = []
     extra_in_schedule = []
-    
+
     # Check each master list entry
     for master_num in sorted(master_sources.keys()):
         master_ref = master_sources[master_num]['reference']
         master_mitzvah = master_sources[master_num]['mitzvah']
-        
+
         if master_num in schedule_sources:
             schedule_ref = schedule_sources[master_num]['reference']
             if master_ref == schedule_ref:
@@ -94,7 +106,7 @@ def compare_sources():
                 'reference': master_ref,
                 'mitzvah': master_mitzvah
             })
-    
+
     # Check for extra entries in schedule
     for schedule_num in schedule_sources.keys():
         if schedule_num not in master_sources:
@@ -103,14 +115,14 @@ def compare_sources():
                 'reference': schedule_sources[schedule_num]['reference'],
                 'mitzvah_type': schedule_sources[schedule_num]['mitzvah_type_number']
             })
-    
+
     # Print results
     print(f"📊 COMPARISON RESULTS:")
     print(f"✅ Matching sources: {len(matches)}")
     print(f"❌ Mismatched sources: {len(mismatches)}")
     print(f"🔍 Missing in schedule: {len(missing_in_schedule)}")
     print(f"➕ Extra in schedule: {len(extra_in_schedule)}")
-    
+
     if mismatches:
         print(f"\n❌ MISMATCHED SOURCES ({len(mismatches)}):")
         print("-" * 80)
@@ -119,35 +131,35 @@ def compare_sources():
             print(f"  Master:   {mismatch['master_ref']}")
             print(f"  Schedule: {mismatch['schedule_ref']}")
             print()
-        
+
         if len(mismatches) > 20:
             print(f"... and {len(mismatches) - 20} more mismatches")
-    
+
     if missing_in_schedule:
         print(f"\n🔍 MISSING IN SCHEDULE ({len(missing_in_schedule)}):")
         print("-" * 80)
         for missing in missing_in_schedule[:10]:
             print(f"#{missing['number']} - {missing['mitzvah'][:60]}... → {missing['reference']}")
-        
+
         if len(missing_in_schedule) > 10:
             print(f"... and {len(missing_in_schedule) - 10} more missing")
-    
+
     if extra_in_schedule:
         print(f"\n➕ EXTRA IN SCHEDULE ({len(extra_in_schedule)}):")
         print("-" * 80)
         for extra in extra_in_schedule:
             print(f"#{extra['number']} ({extra['mitzvah_type']}) → {extra['reference']}")
-    
+
     # Summary
     total_master = len(master_sources)
     total_schedule = len(schedule_sources)
     match_percentage = (len(matches) / total_master) * 100 if total_master > 0 else 0
-    
+
     print(f"\n📈 SUMMARY:")
     print(f"Master list: {total_master} mitzvot")
     print(f"Schedule: {total_schedule} mitzvot")
     print(f"Match rate: {match_percentage:.1f}%")
-    
+
     if len(mismatches) == 0 and len(missing_in_schedule) == 0 and len(extra_in_schedule) == 0:
         print("\n🎉 PERFECT MATCH! All sources are consistent with the master list.")
         return True
@@ -159,7 +171,7 @@ if __name__ == "__main__":
     print("🔍 COMPREHENSIVE SOURCE VERIFICATION")
     print("Comparing Schedule vs Master List")
     print("=" * 80)
-    
+
     try:
         all_match = compare_sources()
         if all_match:

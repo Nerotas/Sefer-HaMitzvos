@@ -1,14 +1,25 @@
-# AWS Lambda Package Creation Script
+param(
+    [switch]$Force
+)
+
+# AWS Lambda Package Creation Script (reusable vendor dir)
 Write-Host "Creating AWS Lambda deployment package..." -ForegroundColor Green
 
-# Clean up any existing deployment directory
-if (Test-Path "lambda_deploy") {
+if ($Force -and (Test-Path "lambda_deploy")) {
+    Write-Host "--force specified: clearing lambda_deploy" -ForegroundColor Yellow
     Remove-Item "lambda_deploy" -Recurse -Force
 }
-New-Item -ItemType Directory -Name "lambda_deploy" | Out-Null
+if (!(Test-Path "lambda_deploy")) {
+    New-Item -ItemType Directory -Name "lambda_deploy" | Out-Null
+}
 
-Write-Host "Installing Twilio for Lambda..." -ForegroundColor Yellow
-python -m pip install twilio --target lambda_deploy --no-user
+Write-Host "Installing dependencies (twilio/requests) if needed..." -ForegroundColor Yellow
+if ($Force -or -not (Test-Path "lambda_deploy\twilio")) {
+    Write-Host "Installing from requirements.txt into lambda_deploy" -ForegroundColor Yellow
+    python -m pip install -r requirements.txt --target lambda_deploy --no-user
+} else {
+    Write-Host "Dependencies already present; skipping install. Use -Force to rebuild." -ForegroundColor Cyan
+}
 
 Write-Host "Copying Lambda bot code and data..." -ForegroundColor Yellow
 
@@ -47,7 +58,5 @@ Write-Host "4. Test with: {`"test_date`": `"2025-11-02`", `"test_mode`": true}"
 
 Write-Host "`nPackage ready with 100% verified accurate sources!" -ForegroundColor Green
 
-# Clean up deployment directory
-Remove-Item "lambda_deploy" -Recurse -Force
-
-Write-Host "Script completed successfully!" -ForegroundColor Green
+# Keep lambda_deploy for faster rebuilds; add -Force to rebuild fresh
+Write-Host "Script completed successfully! (Dependencies cached in lambda_deploy)" -ForegroundColor Green

@@ -53,6 +53,10 @@ tmp/
 *.tmp
 test_twilio.py
 
+# Lambda local artifacts (not committed)
+lambda_deploy/
+mitzvah_bot_lambda.zip
+
 # Railway
 .railway/
 

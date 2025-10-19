@@ -32,8 +32,8 @@ Resources:
     Type: AWS::Serverless::Function
     Properties:
       FunctionName: daily-mitzvah-bot
-      CodeUri: bots/
-      Handler: lambda_mitzvah_bot.lambda_handler
+      CodeUri: .
+      Handler: bots/lambda_mitzvah_bot.lambda_handler
       Environment:
         Variables:
           TWILIO_ACCOUNT_SID: !Ref TwilioAccountSid
@@ -65,13 +65,13 @@ Resources:
   DailyMitzvahSchedule:
     Type: AWS::Scheduler::Schedule
     Properties:
-      Name: daily-mitzvah-10am-chicago
+      Name: !Sub "daily-mitzvah-10am-chicago-${AWS::StackName}"
       Description: "Daily Mitzvah Bot - 10:00 AM America/Chicago"
       State: ENABLED
       ScheduleExpression: "cron(0 10 * * ? *)"
       ScheduleExpressionTimezone: "America/Chicago"
       FlexibleTimeWindow:
-        Mode: OFF
+        Mode: "OFF"
       Target:
         Arn: !GetAtt DailyMitzvahBot.Arn
         RoleArn: !GetAtt SchedulerInvokeRole.Arn
@@ -79,6 +79,14 @@ Resources:
         RetryPolicy:
           MaximumRetryAttempts: 2
           MaximumEventAgeInSeconds: 3600
+
+  SchedulerInvokePermission:
+    Type: AWS::Lambda::Permission
+    Properties:
+      FunctionName: !Ref DailyMitzvahBot
+      Action: lambda:InvokeFunction
+      Principal: scheduler.amazonaws.com
+      SourceArn: !GetAtt DailyMitzvahSchedule.Arn
 
   DailyMitzvahBotLogGroup:
     Type: AWS::Logs::LogGroup
@@ -90,7 +98,3 @@ Outputs:
   DailyMitzvahBotFunction:
     Description: Daily Mitzvah Bot Lambda Function ARN
     Value: !GetAtt DailyMitzvahBot.Arn
-
-  DailyMitzvahBotIamRole:
-    Description: Implicit IAM Role created for Daily Mitzvah Bot function
-    Value: !GetAtt DailyMitzvahBotRole.Arn
