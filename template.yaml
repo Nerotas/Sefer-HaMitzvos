@@ -51,7 +51,7 @@ Resources:
   DailyMitzvahBotLogGroup:
     Type: AWS::Logs::LogGroup
     Properties:
-      LogGroupName: !Sub "/aws/lambda/${DailyMitzvahBot}"
+      LogGroupName: "/aws/lambda/daily-mitzvah-bot"
       RetentionInDays: 14
 
 Outputs:

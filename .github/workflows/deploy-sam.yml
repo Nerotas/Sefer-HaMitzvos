@@ -11,6 +11,9 @@ on:
 jobs:
   deploy:
     runs-on: ubuntu-latest
+    concurrency:
+      group: sam-deploy-${{ github.ref }}
+      cancel-in-progress: false
 
     steps:
       - name: Checkout code
@@ -36,6 +39,7 @@ jobs:
 
       - name: Deploy SAM application
         run: |
+          echo "Using SAM managed default bucket with --resolve-s3"
           sam deploy \
             --resolve-s3 \
             --no-confirm-changeset \
