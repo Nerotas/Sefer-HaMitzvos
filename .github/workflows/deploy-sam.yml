@@ -34,6 +34,23 @@ jobs:
           aws-secret-access-key: ${{ secrets.AWS_SECRET_ACCESS_KEY }}
           aws-region: ${{ secrets.AWS_REGION }}
 
+      - name: Clean up failed stack if needed
+        run: |
+          set -e
+          STACK_NAME="daily-mitzvah-bot-stack"
+          echo "Checking stack status for $STACK_NAME"
+          STATUS=$(aws cloudformation describe-stacks --stack-name "$STACK_NAME" --query 'Stacks[0].StackStatus' --output text 2>/dev/null || echo "NONE")
+          echo "Current stack status: $STATUS"
+          if [ "$STATUS" = "ROLLBACK_COMPLETE" ] || [ "$STATUS" = "ROLLBACK_FAILED" ]; then
+            echo "Deleting failed stack $STACK_NAME before re-deploy..."
+            aws cloudformation delete-stack --stack-name "$STACK_NAME"
+            echo "Waiting for stack deletion to complete..."
+            aws cloudformation wait stack-delete-complete --stack-name "$STACK_NAME"
+            echo "Stack deleted. Proceeding with fresh deploy."
+          else
+            echo "No cleanup required."
+          fi
+
       - name: Build SAM application
         run: sam build
 
