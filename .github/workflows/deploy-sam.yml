@@ -6,6 +6,7 @@ on:
     paths:
       - "bots/lambda_mitzvah_bot.py"
       - "template.yaml"
+      - ".github/workflows/deploy-sam.yml"
   workflow_dispatch: # Allow manual trigger
 
 jobs:
