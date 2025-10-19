@@ -617,9 +617,9 @@ _—Daily Mitzvah Bot_"""
                         sefaria_text = f"\n📖 Learn more: {mitzvah_sefaria_links[i]}"
 
                     biblical_text = ""
-                    # TODO: Re-enable once sources are verified
-                    # if i < len(biblical_sources) and biblical_sources[i] and biblical_sources[i] != 'N/A':
-                    #     biblical_text = f"\n📜 Biblical Source: {biblical_sources[i]}"
+                    # Include biblical source for each mitzvah when available
+                    if i < len(biblical_sources) and biblical_sources[i] and biblical_sources[i] != 'N/A':
+                        biblical_text = f"\n📜 Biblical Source: {biblical_sources[i]}"
 
                     formatted_mitzvah_num = self.format_mitzvah_number(num)
                     message += f"""🔢 *{formatted_mitzvah_num}*
@@ -656,9 +656,9 @@ _—Daily Mitzvah Bot_"""
 
                 # Add biblical source for single mitzvah
                 biblical_text = ""
-                # TODO: Re-enable once sources are verified
-                # if biblical_sources and biblical_sources[0] and biblical_sources[0] != 'N/A':
-                #     biblical_text = f"\n📜 Biblical Source: {biblical_sources[0]}"
+                # Include biblical source for single mitzvah when available
+                if biblical_sources and biblical_sources[0] and biblical_sources[0] != 'N/A':
+                    biblical_text = f"\n📜 Biblical Source: {biblical_sources[0]}"
 
                 message = f"""{header}
 
