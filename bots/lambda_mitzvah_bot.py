@@ -25,9 +25,16 @@ def lambda_handler(event, context):
     """
     AWS Lambda entry point
     This function is called by AWS Lambda when triggered
+    Supports test mode with specific date input
     """
     try:
         logger.info("🕊️ Daily Mitzvah Bot starting on AWS Lambda")
+
+        # Check for test date in event
+        test_date = None
+        if event and 'test_date' in event:
+            test_date = event['test_date']
+            logger.info(f"🧪 Test mode: Using date {test_date}")
 
         # Quick validation
         if not Client:
@@ -39,8 +46,8 @@ def lambda_handler(event, context):
 
         logger.info("Bot initialized, sending daily mitzvah...")
 
-        # Send today's mitzvah
-        success = bot.send_daily_mitzvah()
+        # Send mitzvah for specified date (or today if no test date)
+        success = bot.send_daily_mitzvah(target_date=test_date)
 
         logger.info(f"Mitzvah sending completed: {'Success' if success else 'Failed'}")
 
@@ -49,6 +56,7 @@ def lambda_handler(event, context):
             'statusCode': 200 if success else 500,
             'body': json.dumps({
                 'message': 'Daily mitzvah sent successfully' if success else 'Failed to send mitzvah',
+                'test_date': test_date or 'today',
                 'timestamp': datetime.now().isoformat(),
                 'recipients': len(bot.recipients) if hasattr(bot, 'recipients') else 0
             })
@@ -141,15 +149,32 @@ class MitzvahLambdaBot:
         schedule_data = []
         daily_entries = defaultdict(list)
 
-        with open(csv_path, 'r', encoding='utf-8') as file:
+        with open(csv_path, 'r', encoding='utf-8-sig') as file:  # Handle UTF-8 BOM
             reader = csv.DictReader(file)
+
+            # Debug: Log the fieldnames to help troubleshoot
+            logger.info(f"CSV fieldnames: {reader.fieldnames}")
+
+            row_count = 0
             for row in reader:
-                daily_entries[row['Date']].append({
+                row_count += 1
+
+                # Handle UTF-8 BOM in Date column if present
+                date_key = 'Date' if 'Date' in row else list(row.keys())[0]  # First column should be Date
+                date_value = row[date_key]
+
+                # Debug: Log first few rows for troubleshooting
+                if row_count <= 3:
+                    logger.info(f"Row {row_count}: Date='{date_value}', Keys={list(row.keys())[:3]}")
+
+                daily_entries[date_value].append({
                     'Mitzvah_Type_Number': row['Mitzvah_Type_Number'],
                     'Summary': row['Summary'],
                     'Sefaria_Link': row['Sefaria_Link'],
                     'Biblical_Source': row.get('Biblical_Source', '')
                 })
+
+            logger.info(f"Loaded {row_count} CSV rows into {len(daily_entries)} daily entries")
 
         # Convert to the format expected by lambda bot
         for date, entries in sorted(daily_entries.items()):
@@ -648,17 +673,59 @@ _—Daily Mitzvah Bot_"""
 
         return message
 
-    def send_to_recipient(self, recipient, message):
-        """Send message to a single recipient."""
+    def send_to_recipient(self, recipient, message, mitzvah_data=None):
+        """Send message to a single recipient, using WhatsApp template if available."""
         try:
             logger.info(f"Sending message to {recipient}")
 
-            # Set a timeout for the Twilio API call
-            message_obj = self.client.messages.create(
-                body=message,
-                from_=f'whatsapp:{self.whatsapp_number}',
-                to=f'whatsapp:{recipient}'
-            )
+            # Check for WhatsApp template configuration
+            template_sid = os.environ.get('WHATSAPP_TEMPLATE_SID')
+            use_template = os.environ.get('USE_WHATSAPP_TEMPLATE', 'false').lower() == 'true'
+
+            if template_sid and use_template and mitzvah_data:
+                # Use WhatsApp Business Message Template
+                logger.info(f"Using WhatsApp template: {template_sid}")
+
+                # Extract template variables from mitzvah data
+                date_formatted = datetime.strptime(mitzvah_data.get('date', ''), '%Y-%m-%d').strftime('%B %d, %Y') if mitzvah_data.get('date') else 'Today'
+                mitzvah_nums = mitzvah_data.get('mitzvos', '')
+                description = mitzvah_data.get('title', '')
+
+                # Handle biblical sources
+                biblical_sources = mitzvah_data.get('biblical_sources', [])
+                if isinstance(biblical_sources, list):
+                    sources_text = ', '.join([s for s in biblical_sources if s and s != 'N/A'])
+                else:
+                    sources_text = str(biblical_sources) if biblical_sources else ''
+
+                # Handle Sefaria links
+                sefaria_links = mitzvah_data.get('sefaria_link', [])
+                if isinstance(sefaria_links, list):
+                    links_text = ', '.join([l for l in sefaria_links if l])
+                else:
+                    links_text = str(sefaria_links) if sefaria_links else ''
+
+                message_obj = self.client.messages.create(
+                    content_sid=template_sid,
+                    content_variables=json.dumps({
+                        "1": date_formatted,
+                        "2": mitzvah_nums,
+                        "3": description,
+                        "4": sources_text or 'Traditional Sources',
+                        "5": links_text or 'Available on Sefaria'
+                    }),
+                    from_=f'whatsapp:{self.whatsapp_number}',
+                    to=f'whatsapp:{recipient}'
+                )
+                logger.info(f"WhatsApp template message sent to {recipient}")
+            else:
+                # Fallback to regular SMS (current behavior)
+                logger.info("Using regular SMS (no template configured)")
+                message_obj = self.client.messages.create(
+                    body=message,
+                    from_=self.whatsapp_number,  # Use as regular SMS number
+                    to=recipient  # Send as regular SMS
+                )
 
             logger.info(f"Message sent successfully to {recipient}. SID: {message_obj.sid}")
             return True
@@ -689,7 +756,7 @@ _—Daily Mitzvah Bot_"""
             for i, recipient in enumerate(self.recipients):
                 logger.info(f"Sending to recipient {i+1}/{len(self.recipients)}: {recipient}")
 
-                if self.send_to_recipient(recipient, message):
+                if self.send_to_recipient(recipient, message, mitzvah_data):
                     success_count += 1
                 else:
                     logger.error(f"Failed to send to {recipient}")

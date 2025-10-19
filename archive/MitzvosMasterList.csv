@@ -94,10 +94,10 @@ Number,Mitzvah,Biblical Reference
 93,Not to do prohibited labor on Yom Kippur,Vayikra 23:31
 94,To afflict yourself on Yom Kippur,Vayikra 16:29
 95,Not to eat or drink on Yom Kippur,Vayikra 23:29
-96,To rest on the first day of Passover,Vayikra 23:8
-97,Not to do prohibited labor on the first day of Passover,Vayikra 23:8
-98,To rest on the seventh day of Passover,Vayikra 23:8
-99,Not to do prohibited labor on the seventh day of Passover,Vayikra 23:8
+96,To rest on the first day of Pesach,Vayikra 23:8
+97,Not to do prohibited labor on the first day of Pesach,Vayikra 23:8
+98,To rest on the seventh day of Pesach,Vayikra 23:8
+99,Not to do prohibited labor on the seventh day of Pesach,Vayikra 23:8
 100,To rest on Shavuot,Vayikra 23:21
 101,Not to do prohibited labor on Shavuot,Vayikra 23:21
 102,To rest on Rosh Hashanah,Vayikra 23:24
@@ -108,11 +108,11 @@ Number,Mitzvah,Biblical Reference
 107,Not to do prohibited labor on Shemini Atzeret,Vayikra 23:36
 108,Not to eat Chametz on the afternoon of the 14th day of Nissan,Devarim 16:3
 109,To destroy all Chametz on 14th day of Nissan,Shemos 12:15
-110,Not to eat Chametz all seven days of Passover,Shemos 13:3
-111,Not to eat mixtures containing Chametz all seven days of Passover,Shemos 12:20
+110,Not to eat Chametz all seven days of Pesach,Shemos 13:3
+111,Not to eat mixtures containing Chametz all seven days of Pesach,Shemos 12:20
 112,Chametz should not be seen in your domain seven days,Shemos 13:7
 113,Chametz should not be found in your domain seven days,Shemos 12:19
-114,To eat Matzah on the first night of Passover,Shemos 12:18
+114,To eat Matzah on the first night of Pesach,Shemos 12:18
 115,To relate the Exodus from Egypt on that night,Shemos 13:8
 116,To hear the Shofar on the first day of Tishrei (Rosh Hashanah),Bamidbar 29:1
 117,To dwell in a Sukkah for the seven days of Sukkot,Vayikra 23:42
@@ -381,8 +381,8 @@ Number,Mitzvah,Biblical Reference
 380,To bring two additional lambs as burnt offerings on Shabbat,Bamidbar 28:9
 381,To make the show bread,Shemos 25:30
 382,To bring additional offerings on the New Month (Rosh Chodesh),Bamidbar 28:11
-383,To bring additional offerings on Passover,Bamidbar 28:19
-384,To offer the wave offering from the meal of the new wheat (on the 2nd day of Passover),Vayikra 23:10
+383,To bring additional offerings on Pesach,Bamidbar 28:19
+384,To offer the wave offering from the meal of the new wheat (on the 2nd day of Pesach),Vayikra 23:10
 385,Each man must count the Omer,seven weeks from the day the new wheat offering was brought—Leviticus 23:15
 386,To bring additional offerings on Shavuot,Bamidbar 28:26
 387,To bring two loaves to accompany the above sacrifice,Vayikra 23:18
@@ -418,7 +418,7 @@ Number,Mitzvah,Biblical Reference
 417,Not to leave any meat from the Paschal offering over until morning,Shemos 12:10
 418,Not to leave the second Paschal meat over until morning,Bamidbar 9:12
 419,Not to leave the meat of the holiday offering of the 14th until the 16th,Devarim 16:4
-420,"To be seen at the Temple on Passover, Shavuot, and Sukkot",Devarim 16:16
+420,"To be seen at the Temple on Pesach, Shavuot, and Sukkot",Devarim 16:16
 421,To celebrate on these three Festivals (by bringing a offering),Shemos 23:14
 422,To rejoice on these three Festivals,Devarim 16:14
 423,Not to appear at the Temple without offerings,Devarim 16:16
