@@ -88,12 +88,6 @@ Resources:
       Principal: scheduler.amazonaws.com
       SourceArn: !GetAtt DailyMitzvahSchedule.Arn
 
-  DailyMitzvahBotLogGroup:
-    Type: AWS::Logs::LogGroup
-    Properties:
-      LogGroupName: "/aws/lambda/daily-mitzvah-bot"
-      RetentionInDays: 14
-
 Outputs:
   DailyMitzvahBotFunction:
     Description: Daily Mitzvah Bot Lambda Function ARN
