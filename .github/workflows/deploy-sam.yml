@@ -66,6 +66,9 @@ jobs:
               TwilioAccountSid=${{ secrets.TWILIO_ACCOUNT_SID }} \
               TwilioAuthToken=${{ secrets.TWILIO_AUTH_TOKEN }} \
               TwilioWhatsAppNumber=${{ secrets.TWILIO_WHATSAPP_NUMBER }} \
+              Recipients="${{ secrets.RECIPIENTS }}" \
+            --capabilities CAPABILITY_IAM \
+            --region ${{ secrets.AWS_REGION }}
 
       - name: Warm-up invoke to create log group
         run: |
@@ -75,9 +78,6 @@ jobs:
             --cli-binary-format raw-in-base64-out \
             /dev/null \
             --region ${{ secrets.AWS_REGION }} || true
-              Recipients="${{ secrets.RECIPIENTS }}" \
-            --capabilities CAPABILITY_IAM \
-            --region ${{ secrets.AWS_REGION }}
 
       - name: Set log retention to 14 days
         run: |
