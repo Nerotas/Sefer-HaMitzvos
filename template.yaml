@@ -40,13 +40,45 @@ Resources:
           TWILIO_AUTH_TOKEN: !Ref TwilioAuthToken
           TWILIO_WHATSAPP_NUMBER: !Ref TwilioWhatsAppNumber
           RECIPIENTS: !Ref Recipients
-      Events:
-        DailySchedule:
-          Type: Schedule
-          Properties:
-            Schedule: "cron(10 18 * * ? *)" # 1:10 PM CST daily
-            Description: Daily mitzvah message trigger
-            Enabled: true
+
+  # Timezone-aware daily schedule at 10:00 AM America/Chicago using EventBridge Scheduler
+  SchedulerInvokeRole:
+    Type: AWS::IAM::Role
+    Properties:
+      AssumeRolePolicyDocument:
+        Version: "2012-10-17"
+        Statement:
+          - Effect: Allow
+            Principal:
+              Service: scheduler.amazonaws.com
+            Action: sts:AssumeRole
+      Policies:
+        - PolicyName: AllowInvokeDailyMitzvahBot
+          PolicyDocument:
+            Version: "2012-10-17"
+            Statement:
+              - Effect: Allow
+                Action:
+                  - lambda:InvokeFunction
+                Resource: !GetAtt DailyMitzvahBot.Arn
+
+  DailyMitzvahSchedule:
+    Type: AWS::Scheduler::Schedule
+    Properties:
+      Name: daily-mitzvah-10am-chicago
+      Description: "Daily Mitzvah Bot - 10:00 AM America/Chicago"
+      State: ENABLED
+      ScheduleExpression: "cron(0 10 * * ? *)"
+      ScheduleExpressionTimezone: "America/Chicago"
+      FlexibleTimeWindow:
+        Mode: OFF
+      Target:
+        Arn: !GetAtt DailyMitzvahBot.Arn
+        RoleArn: !GetAtt SchedulerInvokeRole.Arn
+        Input: "{}"
+        RetryPolicy:
+          MaximumRetryAttempts: 2
+          MaximumEventAgeInSeconds: 3600
 
   DailyMitzvahBotLogGroup:
     Type: AWS::Logs::LogGroup
