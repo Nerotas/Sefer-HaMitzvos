@@ -13,6 +13,10 @@ on:
       - "bots/lambda_mitzvah_bot.py"
       - "Schedule.csv"
 
+concurrency:
+  group: lambda-deploy-${{ github.ref }}
+  cancel-in-progress: false
+
 jobs:
   deploy:
     runs-on: ubuntu-latest
@@ -53,17 +57,27 @@ jobs:
             --function-name ${{ secrets.LAMBDA_FUNCTION_NAME }} \
             --zip-file fileb://mitzvah_bot_lambda.zip
 
+      - name: Wait for code update to complete
+        run: |
+          aws lambda wait function-updated \
+            --function-name ${{ secrets.LAMBDA_FUNCTION_NAME }}
+
       - name: Update Lambda configuration (if needed)
+        env:
+          TWILIO_ACCOUNT_SID: ${{ secrets.TWILIO_ACCOUNT_SID }}
+          TWILIO_AUTH_TOKEN: ${{ secrets.TWILIO_AUTH_TOKEN }}
+          TWILIO_WHATSAPP_NUMBER: ${{ secrets.TWILIO_WHATSAPP_NUMBER }}
+          RECIPIENTS: ${{ secrets.RECIPIENTS }}
         run: |
           aws lambda update-function-configuration \
             --function-name ${{ secrets.LAMBDA_FUNCTION_NAME }} \
             --timeout 30 \
-            --environment Variables="{
-              TWILIO_ACCOUNT_SID=${{ secrets.TWILIO_ACCOUNT_SID }},
-              TWILIO_AUTH_TOKEN=${{ secrets.TWILIO_AUTH_TOKEN }},
-              TWILIO_WHATSAPP_NUMBER=${{ secrets.TWILIO_WHATSAPP_NUMBER }},
-              RECIPIENTS=${{ secrets.RECIPIENTS }}
-            }"
+            --environment "Variables={\"TWILIO_ACCOUNT_SID\":\"$TWILIO_ACCOUNT_SID\",\"TWILIO_AUTH_TOKEN\":\"$TWILIO_AUTH_TOKEN\",\"TWILIO_WHATSAPP_NUMBER\":\"$TWILIO_WHATSAPP_NUMBER\",\"RECIPIENTS\":\"$RECIPIENTS\"}"
+
+      - name: Wait for configuration update
+        run: |
+          aws lambda wait function-updated \
+            --function-name ${{ secrets.LAMBDA_FUNCTION_NAME }}
 
       - name: Test Lambda function
         run: |
