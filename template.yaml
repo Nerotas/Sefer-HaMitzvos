@@ -154,7 +154,7 @@ Outputs:
     Value: !Ref DailyMitzvahBot
   DailyMitzvahBotFunctionUrl:
     Description: Function URL for triggering the bot via HTTP
-    Value: !GetAtt DailyMitzvahBotUrl.FunctionUrl
+    Value: !Ref DailyMitzvahBotUrl
   ConsentFunctionUrl:
     Description: Function URL for the consent capture endpoint
-    Value: !GetAtt ConsentHandlerUrl.FunctionUrl
+    Value: !Ref ConsentHandlerUrl
