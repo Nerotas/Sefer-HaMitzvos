@@ -51,6 +51,25 @@ The main schedule file contains:
 3. Set up daily CloudWatch Events trigger
 4. Test with: `{"test_date": "2025-11-02", "test_mode": true}`
 
+### Consent capture (optional, recommended)
+This repo includes a simple consent flow:
+- `ConsentHandler` Lambda with a Function URL (HTTP) to capture opt-ins via:
+	- WhatsApp keyword (reply "JOIN MITZVAH" to your WhatsApp number)
+	- Web form posting to the Function URL
+- DynamoDB table `${STACK}-subscribers` to store consent records.
+
+How to use:
+1. Deploy with SAM (the workflow does this). Note the output `ConsentFunctionUrl`.
+2. Set your site’s `web/optin.html` constants:
+	 - CONSENT_URL = the `ConsentFunctionUrl`
+	 - WHATSAPP_NUMBER = your WhatsApp E.164 number (e.g., +15551234567)
+3. Point your Twilio WhatsApp sender’s incoming webhook to `ConsentFunctionUrl` to accept JOIN/STOP.
+4. To send to opted-in users, set env `SUBSCRIBERS_TABLE` on the sending Lambda (the template wires it automatically) and omit `RECIPIENTS`, or keep both (DynamoDB takes precedence).
+
+Data model (DynamoDB):
+- Partition key `phone` (E.164)
+- Attributes: `channel`, `consent_purpose`, `consent_status`, `source`, `evidence`, `timestamp_iso`, `updated_by`
+
 ## 🔍 Verification Process
 
 Source accuracy verified through comprehensive comparison:

@@ -9,6 +9,7 @@ import logging
 import os
 from datetime import datetime
 from zoneinfo import ZoneInfo
+from typing import List
 
 # Configure logging for Lambda
 logger = logging.getLogger()
@@ -155,12 +156,8 @@ class MitzvahLambdaBot:
             logger.error(f"Failed to create Twilio client: {e}")
             raise
 
-        # Load recipients from environment variable
-        recipients_str = os.environ.get('RECIPIENTS', '')
-        self.recipients = [r.strip() for r in recipients_str.split(',') if r.strip()]
-
-        if not self.recipients:
-            raise ValueError("No recipients configured in RECIPIENTS environment variable")
+        # Load recipients: prefer DynamoDB subscribers table if configured, else env var
+        self.recipients = self._load_recipients()
 
         logger.info(f"Loaded {len(self.recipients)} recipients: {self.recipients}")
 
@@ -169,6 +166,44 @@ class MitzvahLambdaBot:
         self.holiday_data = self.get_embedded_holidays()
         logger.info(f"Loaded {len(self.schedule_data)} schedule entries")
         logger.info(f"Loaded {len(self.holiday_data)} holiday entries")
+
+    def _load_recipients(self) -> List[str]:
+        """Load opted-in recipients from DynamoDB if SUBSCRIBERS_TABLE is set; fallback to RECIPIENTS env."""
+        table_name = os.environ.get('SUBSCRIBERS_TABLE')
+        numbers: List[str] = []
+        if table_name:
+            try:
+                import importlib
+                boto3 = importlib.import_module('boto3')
+                # Dynamically import Attr
+                dyn_conditions = importlib.import_module('boto3.dynamodb.conditions')
+                Attr = getattr(dyn_conditions, 'Attr')
+                ddb = boto3.resource('dynamodb')
+                table = ddb.Table(table_name)
+                scan_kwargs = {
+                    'FilterExpression': Attr('consent_status').eq('opted_in') & Attr('channel').eq('whatsapp')
+                }
+                response = table.scan(**scan_kwargs)
+                items = response.get('Items', [])
+                numbers = [item.get('phone') for item in items if item.get('phone')]
+                # Handle pagination
+                while response.get('LastEvaluatedKey'):
+                    scan_kwargs['ExclusiveStartKey'] = response['LastEvaluatedKey']
+                    response = table.scan(**scan_kwargs)
+                    items = response.get('Items', [])
+                    numbers.extend([item.get('phone') for item in items if item.get('phone')])
+                numbers = sorted(set(numbers))
+                if numbers:
+                    logger.info(f"Loaded {len(numbers)} recipients from DynamoDB table {table_name}")
+            except Exception as e:
+                logger.warning(f"Failed to load subscribers from DynamoDB ({table_name}): {e}")
+
+        if not numbers:
+            recipients_str = os.environ.get('RECIPIENTS', '')
+            numbers = [r.strip() for r in recipients_str.split(',') if r.strip()]
+            if not numbers:
+                raise ValueError("No recipients found. Configure SUBSCRIBERS_TABLE or set RECIPIENTS env var.")
+        return numbers
 
     def load_schedule_data(self):
         """

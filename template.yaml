@@ -38,6 +38,9 @@ Resources:
     Properties:
       CodeUri: .
       Handler: bots/lambda_mitzvah_bot.lambda_handler
+      Policies:
+        - DynamoDBReadPolicy:
+            TableName: !Ref SubscribersTable
       Environment:
         Variables:
           TWILIO_ACCOUNT_SID: !Ref TwilioAccountSid
@@ -45,6 +48,7 @@ Resources:
           TWILIO_WHATSAPP_NUMBER: !Ref TwilioWhatsAppNumber
           RECIPIENTS: !Ref Recipients
           WEBHOOK_TOKEN: !Ref WebhookToken
+          SUBSCRIBERS_TABLE: !Ref SubscribersTable
       FunctionUrlConfig:
         AuthType: NONE
         Cors:
@@ -103,6 +107,44 @@ Resources:
       Principal: scheduler.amazonaws.com
       SourceArn: !GetAtt DailyMitzvahSchedule.Arn
 
+  # DynamoDB table to store WhatsApp subscribers and consent
+  SubscribersTable:
+    Type: AWS::DynamoDB::Table
+    Properties:
+      BillingMode: PAY_PER_REQUEST
+      AttributeDefinitions:
+        - AttributeName: phone
+          AttributeType: S
+      KeySchema:
+        - AttributeName: phone
+          KeyType: HASH
+      TableName: !Sub "${AWS::StackName}-subscribers"
+
+  # Consent capture Lambda (Function URL) to handle Twilio webhooks and web form submissions
+  ConsentHandler:
+    Type: AWS::Serverless::Function
+    Properties:
+      CodeUri: .
+      Handler: bots/consent_handler.lambda_handler
+      Policies:
+        - DynamoDBCrudPolicy:
+            TableName: !Ref SubscribersTable
+      Environment:
+        Variables:
+          SUBSCRIBERS_TABLE: !Ref SubscribersTable
+          TWILIO_AUTH_TOKEN: !Ref TwilioAuthToken
+          REQUIRE_TWILIO_SIGNATURE: "false"
+      FunctionUrlConfig:
+        AuthType: NONE
+        Cors:
+          AllowOrigins:
+            - "*"
+          AllowMethods:
+            - GET
+            - POST
+          AllowHeaders:
+            - "*"
+
 Outputs:
   DailyMitzvahBotFunction:
     Description: Daily Mitzvah Bot Lambda Function ARN
@@ -113,3 +155,6 @@ Outputs:
   DailyMitzvahBotFunctionUrl:
     Description: Function URL for triggering the bot via HTTP
     Value: !GetAtt DailyMitzvahBotUrl.FunctionUrl
+  ConsentFunctionUrl:
+    Description: Function URL for the consent capture endpoint
+    Value: !GetAtt ConsentHandlerUrl.FunctionUrl

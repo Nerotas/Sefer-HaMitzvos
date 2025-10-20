@@ -1,0 +1,64 @@
+<!doctype html>
+<html lang="en">
+  <head>
+    <meta charset="utf-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1" />
+    <title>Daily Mitzvah – WhatsApp Opt‑In</title>
+    <style>
+      body { font-family: system-ui, -apple-system, Segoe UI, Roboto, Arial, sans-serif; margin: 2rem; }
+      .card { max-width: 520px; padding: 1.25rem 1.5rem; border: 1px solid #e5e7eb; border-radius: 12px; }
+      label { display:block; margin: .5rem 0 .25rem; font-weight: 600; }
+      input[type="tel"], button { width:100%; padding:.75rem; font-size:1rem; }
+      button { background:#0ea5e9; color:#fff; border:none; border-radius:8px; cursor:pointer; margin-top:.75rem; }
+      small { color:#6b7280; }
+      .hint { background:#f1f5f9; border-radius:8px; padding:.75rem; margin-top:1rem; }
+    </style>
+  </head>
+  <body>
+    <div class="card">
+      <h2>Subscribe to Daily Mitzvah via WhatsApp</h2>
+      <p>Get one message per day. You can opt out anytime by replying <strong>STOP</strong> on WhatsApp.</p>
+
+      <form id="optinForm">
+        <label for="phone">WhatsApp Number (E.164)</label>
+        <input id="phone" name="phone" type="tel" placeholder="+15551234567" required />
+        <label><input id="consent" name="consent" type="checkbox" required /> I agree to receive one Daily Mitzvah message per day via WhatsApp from this business.</label>
+        <button type="submit">Subscribe</button>
+        <small id="status"></small>
+      </form>
+
+      <div class="hint">
+        <p>Or subscribe via WhatsApp: send <strong>JOIN MITZVAH</strong> to our number.</p>
+        <p>WhatsApp link: <a id="waLink" href="#" target="_blank" rel="noopener">Open in WhatsApp</a></p>
+      </div>
+    </div>
+
+    <script>
+      // Replace with your deployed Function URL and WhatsApp number
+      const CONSENT_URL = "YOUR_CONSENT_FUNCTION_URL"; // e.g., https://abc.lambda-url.us-east-1.on.aws/
+      const WHATSAPP_NUMBER = "+15551234567"; // E.164 without whatsapp: prefix
+
+      const form = document.getElementById('optinForm');
+      const status = document.getElementById('status');
+      const wa = document.getElementById('waLink');
+      wa.href = `https://wa.me/${WHATSAPP_NUMBER.replace('+','')}?text=${encodeURIComponent('JOIN MITZVAH')}`;
+
+      form.addEventListener('submit', async (e) => {
+        e.preventDefault();
+        status.textContent = 'Submitting…';
+        const body = {
+          phone: form.phone.value.trim(),
+          consent: form.consent.checked,
+          action: 'optin'
+        };
+        try {
+          const res = await fetch(CONSENT_URL, { method: 'POST', headers: { 'Content-Type': 'application/json' }, body: JSON.stringify(body) });
+          const json = await res.json();
+          status.textContent = json.message || 'Saved';
+        } catch (err) {
+          status.textContent = 'Failed to subscribe. Try again later.';
+        }
+      });
+    </script>
+  </body>
+</html>

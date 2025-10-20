@@ -5,7 +5,9 @@ on:
     branches: [main]
     paths:
       - "bots/lambda_mitzvah_bot.py"
+      - "bots/consent_handler.py"
       - "template.yaml"
+      - "web/optin.html"
       - ".github/workflows/deploy-sam.yml"
   workflow_dispatch: # Allow manual trigger
 
@@ -99,6 +101,13 @@ jobs:
           URL=$(aws cloudformation describe-stacks --stack-name daily-mitzvah-bot-stack --query "Stacks[0].Outputs[?OutputKey=='DailyMitzvahBotFunctionUrl'].OutputValue" --output text)
           echo "Function URL: $URL"
           echo "url=$URL" >> $GITHUB_OUTPUT
+
+      - name: Get consent Function URL from stack outputs
+        id: get-consent-url
+        run: |
+          CURL=$(aws cloudformation describe-stacks --stack-name daily-mitzvah-bot-stack --query "Stacks[0].Outputs[?OutputKey=='ConsentFunctionUrl'].OutputValue" --output text)
+          echo "Consent Function URL: $CURL"
+          echo "consent_url=$CURL" >> $GITHUB_OUTPUT
 
       - name: Warm-up invoke to create log group
         run: |
