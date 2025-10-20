@@ -59,6 +59,38 @@ jobs:
       - name: Build SAM application
         run: sam build
 
+      - name: Wait for Lambda functions to be idle (avoid 409 conflicts)
+        run: |
+          # Get existing function names from previous stack version if it exists
+          FUNCTIONS=$(aws cloudformation list-stack-resources \
+            --stack-name daily-mitzvah-bot-stack \
+            --query "StackResourceSummaries[?ResourceType=='AWS::Lambda::Function'].PhysicalResourceId" \
+            --output text 2>/dev/null || echo "")
+
+          if [ -n "$FUNCTIONS" ]; then
+            echo "Waiting for existing Lambda functions to finish any in-progress updates..."
+            for fn in $FUNCTIONS; do
+              if [ "$fn" != "None" ] && [ -n "$fn" ]; then
+                echo "Checking $fn..."
+                for i in {1..60}; do
+                  STATUS=$(aws lambda get-function-configuration --function-name "$fn" --query 'LastUpdateStatus' --output text 2>/dev/null || echo "NotFound")
+                  if [ "$STATUS" = "NotFound" ]; then
+                    echo "$fn not found (may have been deleted)"
+                    break
+                  fi
+                  if [ "$STATUS" != "InProgress" ]; then
+                    echo "$fn is $STATUS"
+                    break
+                  fi
+                  echo "$fn is still InProgress, waiting..."
+                  sleep 10
+                done
+              fi
+            done
+          else
+            echo "No existing functions found or stack doesn't exist yet"
+          fi
+
       - name: Remove legacy Lambda function if present (optional)
         if: ${{ env.DELETE_LEGACY_LAMBDA == 'true' }}
         run: |
