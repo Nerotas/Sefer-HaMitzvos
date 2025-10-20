@@ -1,18 +1,19 @@
 ﻿Date,Sequential_Number,Mitzvah_Type_Number,Summary,Biblical_Source,Sefaria_Link
-2025-10-20,1,Intro 1,Introduction to Counting the Mitzvos.,,https://www.sefaria.org/Sefer_HaMitzvot%2C_Shorashim.1?lang=bi
-2025-10-21,2,Intro 2,Principle 1: Not rabbinic commandments.,,https://www.sefaria.org/Sefer_HaMitzvot%2C_Shorashim.2?lang=bi
-2025-10-22,3,Intro 3,Principle 2: Not derived through hermeneutics.,,https://www.sefaria.org/Sefer_HaMitzvot%2C_Shorashim.3?lang=bi
-2025-10-23,4,Intro 4,Principle 3: Only perpetual commandments.,,https://www.sefaria.org/Sefer_HaMitzvot%2C_Shorashim.4?lang=bi
-2025-10-24,5,Intro 5,Principle 4: Not general Torah commands.,,https://www.sefaria.org/Sefer_HaMitzvot%2C_Shorashim.5?lang=bi
-2025-10-25,6,Intro 6,Principle 5: Not reasons as separate mitzvos.,,https://www.sefaria.org/Sefer_HaMitzvot%2C_Shorashim.6?lang=bi
-2025-10-26,7,Intro 7,Principle 6: Separate positive and negative.,,https://www.sefaria.org/Sefer_HaMitzvot%2C_Shorashim.7?lang=bi
-2025-10-27,8,Intro 8,Principle 7: Not details of commandments.,,https://www.sefaria.org/Sefer_HaMitzvot%2C_Shorashim.8?lang=bi
-2025-10-28,9,Intro 9,Principle 8: Not negation of positive commands.,,https://www.sefaria.org/Sefer_HaMitzvot%2C_Shorashim.9?lang=bi
-2025-10-29,10,Intro 10,"Principle 9: Count substance, not statements.",,https://www.sefaria.org/Sefer_HaMitzvot%2C_Shorashim.10?lang=bi
-2025-10-30,11,Intro 11,Principle 10: Not preliminaries to commandments.,,https://www.sefaria.org/Sefer_HaMitzvot%2C_Shorashim.11?lang=bi
-2025-10-31,12,Intro 12,Principle 11: Not parts of unified commandments.,,https://www.sefaria.org/Sefer_HaMitzvot%2C_Shorashim.12?lang=bi
-2025-11-01,13,Intro 13,Principle 12: Not work process components.,,https://www.sefaria.org/Sefer_HaMitzvot%2C_Shorashim.13?lang=bi
-2025-11-02,14,Intro 14,Principle 13: Not repetition-based counting.,,https://www.sefaria.org/Sefer_HaMitzvot%2C_Shorashim.14?lang=bi
+2025-10-20,1,Counting,Introduction to Counting the Mitzvos.,,https://www.sefaria.org/Sefer_HaMitzvot%2C_Introductions%2C_The_Rambam's_Introduction?lang=bi&with=Navigation&lang2=en
+2025-10-21,2,Intro 1,Principle 1:That it is inappropriate to count rabbinic commandments in this category,,https://www.sefaria.org/Sefer_HaMitzvot%2C_Shorashim.1?lang=bi
+2025-10-22,3,Intro 2,Principle 2: That it is inappropriate to count anything that we learn from the thirteen hermeneutic principles through which the Torah is expounded or from a (formal technical) inclusion.,,https://www.sefaria.org/Sefer_HaMitzvot%2C_Shorashim.2?lang=bi
+2025-10-23,4,Intro 3,Principle 3: That it is inappropriate to count commandments that are not practiced for [all] generations.,,https://www.sefaria.org/Sefer_HaMitzvot%2C_Shorashim.3?lang=bi
+2025-10-24,5,Intro 4,Principle 4: That it is inappropriate to count commands that include the whole Torah.,,https://www.sefaria.org/Sefer_HaMitzvot%2C_Shorashim.4?lang=bi
+2025-10-25,6,Intro 5,Principle 5: That it is inappropriate to count the reason for a commandment as a commandment on its own.,,https://www.sefaria.org/Sefer_HaMitzvot%2C_Shorashim.5?lang=bi
+2025-10-26,7,Intro 6,"Principle 6: That it is appropriate with a commandment that includes [both] a positive commandment and a negative commandment, to count the positive commandment in it with the positive commandments and the negative commandment in it with the negative commandments.",,https://www.sefaria.org/Sefer_HaMitzvot%2C_Shorashim.6?lang=bi
+2025-10-27,8,Intro 7,Principle 7: That it is inappropriate to count the details of the commandments.,,https://www.sefaria.org/Sefer_HaMitzvot%2C_Shorashim.7?lang=bi
+2025-10-28,9,Intro 8,Principle 8: That it is inappropriate to count the negation of a positive commandment with the negative commandments.,,https://www.sefaria.org/Sefer_HaMitzvot%2C_Shorashim.8?lang=bi
+2025-10-29,10,Intro 9,"Principle 9: That it is inappropriate to count the [statements] of the negative commandments and the positive commandments, but rather the items prohibited by them or commanded by them.",,https://www.sefaria.org/Sefer_HaMitzvot%2C_Shorashim.9?lang=bi
+2025-10-30,11,Intro 10,Principle 10: That it is inappropriate to count preliminaries that are for one of various purposes.,,https://www.sefaria.org/Sefer_HaMitzvot%2C_Shorashim.10?lang=bi
+2025-10-31,12,Intro 11,"Principle 11: That it is inappropriate to count each of the parts of a commandment on its own, when their combination is one commandment.",,https://www.sefaria.org/Sefer_HaMitzvot%2C_Shorashim.11?lang=bi
+2025-11-01,13,Intro 12,"Principle 12: That it is inappropriate to count parts of work, that are required by a command, on their own.",,https://www.sefaria.org/Sefer_HaMitzvot%2C_Shorashim.12?lang=bi
+2025-11-02,14,Intro 13,Principle 13: That the count of commandments not be increased according to the number of days that one is obligated in that commandment.,,https://www.sefaria.org/Sefer_HaMitzvot%2C_Shorashim.13?lang=bi
+2025-11-02,14,Intro 14,"Principle 14: That it is inappropriate to count the enactment of (fences) [punishments] among the positive commandments.",,https://www.sefaria.org/Sefer_HaMitzvot%2C_Shorashim.14?lang=bi
 2025-11-03,15,Positive 1,To know there is a G‑d,Shemos 20:2,https://www.sefaria.org/Sefer_HaMitzvot%2C_Positive_Commandments.1?lang=bi
 2025-11-04,16,Positive 2,We are commanded to believe in G-d's unity.,Shemos 20:3,https://www.sefaria.org/Sefer_HaMitzvot%2C_Positive_Commandments.2?lang=bi
 2025-11-05,17,Positive 3,To know that He is one,Devarim 6:4,https://www.sefaria.org/Sefer_HaMitzvot%2C_Positive_Commandments.3?lang=bi

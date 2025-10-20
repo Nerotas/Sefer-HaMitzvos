@@ -1,0 +1,8 @@
+{
+  "phone": { "S": "+16613059259" },
+  "consent_status": { "S": "opted_in" },
+  "channel": { "S": "whatsapp" },
+  "source": { "S": "migrated" },
+  "evidence": { "S": "Existing recipient from RECIPIENTS env var" },
+  "timestamp_iso": { "S": "2025-10-20T20:16:00.000000+00:00" }
+}
