@@ -65,7 +65,7 @@ def lambda_handler(event, context):
     Supports test mode with specific date input
     """
     try:
-        logger.info("🕊️ Daily Mitzvah Bot starting on AWS Lambda")
+        logger.info("✡️ Daily Mitzvah Bot starting on AWS Lambda")
 
         # Check if invoked via HTTP webhook (Lambda Function URL / API Gateway v2)
         http_date, http_token, is_http = _extract_http_params(event)
@@ -624,9 +624,9 @@ class MitzvahLambdaBot:
             # Introduction/Shorashim message
             sefaria_text = ""
             if sefaria_links and sefaria_links[0]:
-                sefaria_text = f"\n📖 Learn more: {sefaria_links[0]}"
+                sefaria_text = f"\n🕍 Learn more: {sefaria_links[0]}"
 
-            message = f"""🕊️ *Sefer HaMitzvos Daily Study* 📚
+            message = f"""✡️ *Sefer HaMitzvos Daily Study* 📚
 
 📅 {date_formatted}
 
@@ -659,7 +659,7 @@ _—Daily Mitzvah Bot_"""
                 mitzvah_sefaria_links = sefaria_links if len(sefaria_links) > 1 else [sefaria_links[0] if sefaria_links else ''] * len(numbers)
 
                 # Build message header with holiday context
-                header = f"🕊️ *Sefer HaMitzvos Daily Study* 📚\n\n📅 {date_formatted}"
+                header = f"✡️ *Sefer HaMitzvos Daily Study* 📚\n\n📅 {date_formatted}"
 
                 if is_consolidated:
                     header += f"\n🎊 *Special Holiday Schedule* - {consolidation_reason}"
@@ -670,8 +670,7 @@ _—Daily Mitzvah Bot_"""
                 for i, (num, title, source) in enumerate(zip(numbers, titles, sources)):
                     sefaria_text = ""
                     if i < len(mitzvah_sefaria_links) and mitzvah_sefaria_links[i]:
-                        sefaria_text = f"\n📖 Learn more: {mitzvah_sefaria_links[i]}"
-
+                        sefaria_text = f"\n🕍 Learn more: {mitzvah_sefaria_links[i]}"
                     biblical_text = ""
                     # Include biblical source for each mitzvah when available
                     if i < len(biblical_sources) and biblical_sources[i] and biblical_sources[i] != 'N/A':
@@ -698,9 +697,8 @@ _—Daily Mitzvah Bot_"""
                 # Single mitzvah
                 formatted_mitzvah_num = self.format_mitzvah_number(mitzvah_nums)
                 mitzvah_text = f"*{formatted_mitzvah_num}*"
-
                 # Build header with holiday context
-                header = f"🕊️ *Sefer HaMitzvos Daily Study* 📚\n\n📅 {date_formatted}"
+                header = f"✡️ *Sefer HaMitzvos Daily Study* 📚\n\n📅 {date_formatted}"
 
                 if is_consolidated:
                     header += f"\n🎊 *Special Holiday Schedule* - {consolidation_reason}"
@@ -708,7 +706,7 @@ _—Daily Mitzvah Bot_"""
                 # Add Sefaria link for single mitzvah
                 sefaria_text = ""
                 if sefaria_links and sefaria_links[0]:
-                    sefaria_text = f"\n📖 Learn more: {sefaria_links[0]}"
+                    sefaria_text = f"\n🕍 Learn more: {sefaria_links[0]}"
 
                 # Add biblical source for single mitzvah
                 biblical_text = ""
@@ -821,7 +819,7 @@ _—Daily Mitzvah Bot_"""
             return success_count > 0
 
         except Exception as e:
-            logger.error(f"Error in send_daily_mitzvah: {e}")
+            logger.error(f"Failed to send daily mitzvah: {e}")
             return False
 
 # For local testing (not used in Lambda)
