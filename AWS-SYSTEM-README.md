@@ -21,6 +21,7 @@ This document explains everything used in our AWS system, how components fit tog
 From `template.yaml`:
 
 - Lambda: `DailyMitzvahBot`
+
   - Runtime: Python 3.11
   - Handler: `bots/lambda_mitzvah_bot.lambda_handler`
   - Env: `SUBSCRIBERS_TABLE`, `TWILIO_*`, `RECIPIENTS` (fallback)
@@ -28,6 +29,7 @@ From `template.yaml`:
   - Function URL: Enabled (CORS open)
 
 - Lambda: `ConsentHandler`
+
   - Runtime: Python 3.11
   - Handler: `bots/consent_handler.lambda_handler`
   - Env: `SUBSCRIBERS_TABLE`, `WEBHOOK_TOKEN` (optional)
@@ -35,16 +37,19 @@ From `template.yaml`:
   - Function URL: Enabled (CORS open, public)
 
 - DynamoDB: `SubscribersTable` (physical: `daily-mitzvah-bot-stack-subscribers`)
+
   - PK: `phone` (string)
   - Billing: PAY_PER_REQUEST
 
 - EventBridge Scheduler: `DailyMitzvahSchedule`
+
   - Name: `daily-mitzvah-10am-chicago-${StackName}` (physical example: `daily-mitzvah-10am-chicago-daily-mitzvah-bot-stack`)
   - Expression: `cron(0 10 * * ? *)` timezone `America/Chicago`
   - Target: `DailyMitzvahBot`
   - Invoke Role: `SchedulerInvokeRole`
 
 - IAM: `SchedulerInvokeRole`
+
   - Allows EventBridge to invoke `DailyMitzvahBot`
 
 - Lambda Permission: `SchedulerInvokePermission`
@@ -87,6 +92,7 @@ From `template.yaml`:
 Commit to `main` → GitHub Actions runs in this strict order:
 
 1. Workflow: "Deploy with AWS SAM" (`.github/workflows/deploy-sam.yml`)
+
    - Sets up Python, SAM, AWS credentials
    - If prior stack failed, cleans it up (delete ROLLBACK states)
    - `sam build`
@@ -101,6 +107,7 @@ Commit to `main` → GitHub Actions runs in this strict order:
    - Optionally updates environment variables when requested
 
 Safeguards:
+
 - Concurrency group prevents overlaps in each workflow
 - No push trigger on the direct Lambda deployer (prevents races)
 - Custom polling loops replace flaky waiters (CloudFormation and Lambda)
@@ -110,6 +117,7 @@ Safeguards:
 ## 6) Runtime – Order of Operations
 
 A) Daily send (EventBridge → Lambda):
+
 1. EventBridge Scheduler triggers at 10:00 America/Chicago
 2. AWS invokes `DailyMitzvahBot`
 3. Function loads recipients:
@@ -119,6 +127,7 @@ A) Daily send (EventBridge → Lambda):
 5. Logs results; errors retried per Lambda runtime policy
 
 B) Consent capture (Two entry points):
+
 1. Twilio inbound webhook → `ConsentHandler` Function URL
    - Parses keywords: JOIN MITZVAH → `opted_in`; STOP/UNSUBSCRIBE → `opted_out`
    - Writes record to DynamoDB with evidence and timestamp
@@ -133,6 +142,7 @@ B) Consent capture (Two entry points):
 ## 7) Environment Variables and Secrets
 
 Lambda environment variables (configured via workflows or SAM):
+
 - `SUBSCRIBERS_TABLE` = `daily-mitzvah-bot-stack-subscribers`
 - `TWILIO_ACCOUNT_SID` = e.g., `ACxxxxxxxx...` (GitHub secret)
 - `TWILIO_AUTH_TOKEN` = e.g., `xxxxxxxx` (GitHub secret)
@@ -141,6 +151,7 @@ Lambda environment variables (configured via workflows or SAM):
 - `WEBHOOK_TOKEN` = optional shared secret for web form submissions
 
 GitHub Actions secrets required:
+
 - `AWS_ACCESS_KEY_ID`, `AWS_SECRET_ACCESS_KEY`, `AWS_REGION`
 - `TWILIO_ACCOUNT_SID`, `TWILIO_AUTH_TOKEN`, `TWILIO_WHATSAPP_NUMBER`
 - `RECIPIENTS` (optional), `WEBHOOK_TOKEN` (optional)
@@ -185,11 +196,13 @@ GitHub Actions secrets required:
 ## 11) Manual Test Commands
 
 - Get stack status:
+
   ```powershell
   aws cloudformation describe-stacks --stack-name daily-mitzvah-bot-stack --query "Stacks[0].StackStatus" --output text --region us-east-1
   ```
 
 - Get function URLs:
+
   ```powershell
   aws lambda get-function-url-config --function-name daily-mitzvah-bot-stack-ConsentHandler-1QnQEujF4Goa --query FunctionUrl --output text --region us-east-1
   aws lambda get-function-url-config --function-name daily-mitzvah-bot-stack-DailyMitzvahBot-FIJT0KdQy1L2 --query FunctionUrl --output text --region us-east-1

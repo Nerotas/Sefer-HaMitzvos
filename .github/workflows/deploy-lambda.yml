@@ -1,4 +1,4 @@
-name: Deploy Lambda Function
+name: Deploy Lambda Functions (explicit names)
 
 on:
   workflow_run:
@@ -6,12 +6,8 @@ on:
     types: [completed]
   workflow_dispatch:
     inputs:
-      function_name:
-        description: "Lambda function name to update (overrides stack resolution)"
-        required: false
-        type: string
       update_env:
-        description: "Update Lambda environment variables from secrets"
+        description: "Update bot Lambda environment variables from secrets"
         required: false
         default: false
         type: boolean
@@ -24,6 +20,20 @@ jobs:
   deploy:
     runs-on: ubuntu-latest
     if: ${{ github.event_name == 'workflow_dispatch' || (github.event_name == 'workflow_run' && github.event.workflow_run.conclusion == 'success') }}
+    strategy:
+      fail-fast: false
+      matrix:
+        target:
+          - name: bot
+            file: bots/lambda_mitzvah_bot.py
+            zip: mitzvah_bot_lambda.zip
+            extra: Schedule.csv
+            secretKey: LAMBDA_FUNCTION_NAME_BOT
+          - name: consent
+            file: bots/consent_handler.py
+            zip: consent_handler_lambda.zip
+            extra: ""
+            secretKey: LAMBDA_FUNCTION_NAME_CONSENT
 
     steps:
       - name: Checkout code (commit for this event)
@@ -45,14 +55,16 @@ jobs:
         run: |
           command -v jq >/dev/null 2>&1 || sudo apt-get update && sudo apt-get install -y jq
 
-      - name: Create Lambda package
+      - name: Create Lambda package (${{ matrix.target.name }})
         run: |
-          mkdir lambda_package
-          cp bots/lambda_mitzvah_bot.py lambda_package/
-          cp Schedule.csv lambda_package/ 2>/dev/null || echo "Schedule.csv not found, using embedded data"
+          mkdir -p lambda_package
+          cp "${{ matrix.target.file }}" lambda_package/
+          if [ -n "${{ matrix.target.extra }}" ] && [ -f "${{ matrix.target.extra }}" ]; then
+            cp "${{ matrix.target.extra }}" lambda_package/
+          fi
           pip install twilio requests -t lambda_package/
           cd lambda_package
-          zip -r ../mitzvah_bot_lambda.zip .
+          zip -r "../${{ matrix.target.zip }}" .
 
       - name: Configure AWS credentials
         uses: aws-actions/configure-aws-credentials@v4
@@ -61,27 +73,27 @@ jobs:
           aws-secret-access-key: ${{ secrets.AWS_SECRET_ACCESS_KEY }}
           aws-region: ${{ secrets.AWS_REGION }}
 
-      - name: Wait for CloudFormation stack to stabilize (if present)
+      - name: Resolve explicit Lambda function name (${{ matrix.target.name }})
+        id: resolve-fn
+        env:
+          FN_BOT: ${{ secrets.LAMBDA_FUNCTION_NAME_BOT }}
+          FN_CONSENT: ${{ secrets.LAMBDA_FUNCTION_NAME_CONSENT }}
         run: |
-          STACK_NAME="daily-mitzvah-bot-stack"
-          echo "Checking CloudFormation stack $STACK_NAME status..."
-          STATUS=$(aws cloudformation describe-stacks --stack-name "$STACK_NAME" --query 'Stacks[0].StackStatus' --output text 2>/dev/null || echo "NONE")
-          echo "Initial status: $STATUS"
-          case "$STATUS" in
-            NONE)
-              echo "Stack not found; continuing."
+          case "${{ matrix.target.name }}" in
+            bot)
+              FN="$FN_BOT"
               ;;
-            *)
-              for i in {1..120}; do
-                STATUS=$(aws cloudformation describe-stacks --stack-name "$STACK_NAME" --query 'Stacks[0].StackStatus' --output text)
-                echo "Stack status: $STATUS"
-                if [[ "$STATUS" != *"IN_PROGRESS" ]]; then
-                  break
-                fi
-                sleep 10
-              done
+            consent)
+              FN="$FN_CONSENT"
               ;;
           esac
+          if [ -z "$FN" ]; then
+            echo "No explicit function name secret set for ${{ matrix.target.name }}; skipping this target."
+            echo "skip=true" >> $GITHUB_OUTPUT
+            exit 0
+          fi
+          echo "Resolved function name: $FN"
+          echo "name=$FN" >> $GITHUB_OUTPUT
 
       - name: Resolve Lambda function name (dispatch input > stack > secret)
         id: resolve-fn
@@ -102,27 +114,29 @@ jobs:
           fi
           echo "name=$FN" >> $GITHUB_OUTPUT
 
-      - name: Upload zip to S3 (optional)
+      - name: Upload zip to S3 (optional) (${{ matrix.target.name }})
         id: upload-s3
         env:
           S3_BUCKET: ${{ secrets.S3_BUCKET }}
           S3_PREFIX: ${{ secrets.S3_PREFIX }}
           GITHUB_SHA: ${{ github.sha }}
+        if: steps.resolve-fn.outputs.skip != 'true'
         run: |
           if [ -n "$S3_BUCKET" ]; then
             PREFIX=${S3_PREFIX:-lambda}
-            KEY="$PREFIX/mitzvah_bot_lambda-$GITHUB_SHA.zip"
-            echo "Uploading mitzvah_bot_lambda.zip to s3://$S3_BUCKET/$KEY"
-            aws s3 cp mitzvah_bot_lambda.zip "s3://$S3_BUCKET/$KEY"
+            KEY="$PREFIX/${{ matrix.target.name }}-$GITHUB_SHA.zip"
+            echo "Uploading ${{ matrix.target.zip }} to s3://$S3_BUCKET/$KEY"
+            aws s3 cp "${{ matrix.target.zip }}" "s3://$S3_BUCKET/$KEY"
             echo "key=$KEY" >> $GITHUB_OUTPUT
           else
             echo "S3 bucket not set; will use direct zip upload"
             echo "key=" >> $GITHUB_OUTPUT
           fi
 
-      - name: Deploy to Lambda
+      - name: Deploy to Lambda (${{ matrix.target.name }})
         env:
           S3_BUCKET: ${{ secrets.S3_BUCKET }}
+        if: steps.resolve-fn.outputs.skip != 'true'
         run: |
           # Wait until function is not updating before starting a new update
           echo "Checking Lambda update status before deploy..."
@@ -144,10 +158,11 @@ jobs:
           else
             aws lambda update-function-code \
               --function-name "${{ steps.resolve-fn.outputs.name }}" \
-              --zip-file fileb://mitzvah_bot_lambda.zip
+              --zip-file fileb://"${{ matrix.target.zip }}"
           fi
 
-      - name: Wait for code update to complete (poll)
+      - name: Wait for code update to complete (poll) (${{ matrix.target.name }})
+        if: steps.resolve-fn.outputs.skip != 'true'
         run: |
           echo "Waiting for LastUpdateStatus == Successful"
           for i in {1..90}; do
@@ -168,10 +183,11 @@ jobs:
             exit 1
           fi
 
-      - name: Publish version and update alias (optional, with retry)
+      - name: Publish version and update alias (optional, with retry) (${{ matrix.target.name }})
         env:
           UPDATE_ALIAS: ${{ secrets.UPDATE_ALIAS }}
           ALIAS_NAME: ${{ secrets.LAMBDA_ALIAS_NAME }}
+        if: steps.resolve-fn.outputs.skip != 'true'
         run: |
           if [ "$UPDATE_ALIAS" = "true" ] && [ -n "$ALIAS_NAME" ]; then
             echo "Publishing new version for function ${{ steps.resolve-fn.outputs.name }}"
@@ -212,7 +228,8 @@ jobs:
             echo "Skipping alias promotion"
           fi
 
-      - name: Update Lambda configuration (optional)
+      - name: Update Lambda configuration (optional, bot only)
+        if: steps.resolve-fn.outputs.skip != 'true' && matrix.target.name == 'bot'
         env:
           TWILIO_ACCOUNT_SID: ${{ secrets.TWILIO_ACCOUNT_SID }}
           TWILIO_AUTH_TOKEN: ${{ secrets.TWILIO_AUTH_TOKEN }}
@@ -240,7 +257,8 @@ jobs:
             echo "Skipping environment update (UPDATE_LAMBDA_ENV not true)"
           fi
 
-      - name: Wait for configuration update (poll)
+      - name: Wait for configuration update (poll) (${{ matrix.target.name }})
+        if: steps.resolve-fn.outputs.skip != 'true' && matrix.target.name == 'bot'
         run: |
           echo "Waiting for configuration update to complete"
           for i in {1..90}; do
@@ -261,7 +279,8 @@ jobs:
             exit 1
           fi
 
-      - name: Test Lambda function
+      - name: Test Lambda function (bot only)
+        if: steps.resolve-fn.outputs.skip != 'true' && matrix.target.name == 'bot'
         run: |
           DATE=$(TZ=America/Chicago date +%F)
           echo "Testing with date: $DATE"
