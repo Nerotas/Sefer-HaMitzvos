@@ -80,11 +80,57 @@ jobs:
           fi
           echo "name=$FN" >> $GITHUB_OUTPUT
 
-      - name: Deploy to Lambda
+      - name: Upload zip to S3 (optional)
+        id: upload-s3
+        env:
+          S3_BUCKET: ${{ secrets.S3_BUCKET }}
+          S3_PREFIX: ${{ secrets.S3_PREFIX }}
+          GITHUB_SHA: ${{ github.sha }}
         run: |
-          aws lambda update-function-code \
-            --function-name "${{ steps.resolve-fn.outputs.name }}" \
-            --zip-file fileb://mitzvah_bot_lambda.zip
+          if [ -n "$S3_BUCKET" ]; then
+            PREFIX=${S3_PREFIX:-lambda}
+            KEY="$PREFIX/mitzvah_bot_lambda-$GITHUB_SHA.zip"
+            echo "Uploading mitzvah_bot_lambda.zip to s3://$S3_BUCKET/$KEY"
+            aws s3 cp mitzvah_bot_lambda.zip "s3://$S3_BUCKET/$KEY"
+            echo "key=$KEY" >> $GITHUB_OUTPUT
+          else
+            echo "S3 bucket not set; will use direct zip upload"
+            echo "key=" >> $GITHUB_OUTPUT
+          fi
+
+      - name: Deploy to Lambda
+        env:
+          S3_BUCKET: ${{ secrets.S3_BUCKET }}
+        run: |
+          if [ -n "${{ steps.upload-s3.outputs.key }}" ]; then
+            aws lambda update-function-code \
+              --function-name "${{ steps.resolve-fn.outputs.name }}" \
+              --s3-bucket "$S3_BUCKET" \
+              --s3-key "${{ steps.upload-s3.outputs.key }}"
+          else
+            aws lambda update-function-code \
+              --function-name "${{ steps.resolve-fn.outputs.name }}" \
+              --zip-file fileb://mitzvah_bot_lambda.zip
+          fi
+
+      - name: Publish version and update alias (optional)
+        env:
+          UPDATE_ALIAS: ${{ secrets.UPDATE_ALIAS }}
+          ALIAS_NAME: ${{ secrets.LAMBDA_ALIAS_NAME }}
+        run: |
+          if [ "$UPDATE_ALIAS" = "true" ] && [ -n "$ALIAS_NAME" ]; then
+            VER=$(aws lambda publish-version --function-name "${{ steps.resolve-fn.outputs.name }}" --query Version --output text)
+            echo "Published version $VER"
+            # Try update alias, if it doesn't exist, create it
+            set -e
+            if aws lambda get-alias --function-name "${{ steps.resolve-fn.outputs.name }}" --name "$ALIAS_NAME" >/dev/null 2>&1; then
+              aws lambda update-alias --function-name "${{ steps.resolve-fn.outputs.name }}" --name "$ALIAS_NAME" --function-version "$VER"
+            else
+              aws lambda create-alias --function-name "${{ steps.resolve-fn.outputs.name }}" --name "$ALIAS_NAME" --function-version "$VER"
+            fi
+          else
+            echo "Skipping alias promotion"
+          fi
 
       - name: Wait for code update to complete
         run: |
