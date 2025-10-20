@@ -30,6 +30,10 @@ jobs:
           python -m pip install --upgrade pip
           pip install twilio requests
 
+      - name: Ensure jq is available
+        run: |
+          command -v jq >/dev/null 2>&1 || sudo apt-get update && sudo apt-get install -y jq
+
       - name: Create Lambda package
         run: |
           mkdir lambda_package
@@ -72,17 +76,25 @@ jobs:
           aws lambda wait function-updated \
             --function-name "${{ steps.resolve-fn.outputs.name }}"
 
-      - name: Update Lambda configuration (if needed)
+      - name: Update Lambda configuration (optional)
+        if: ${{ secrets.UPDATE_LAMBDA_ENV == 'true' }}
         env:
           TWILIO_ACCOUNT_SID: ${{ secrets.TWILIO_ACCOUNT_SID }}
           TWILIO_AUTH_TOKEN: ${{ secrets.TWILIO_AUTH_TOKEN }}
           TWILIO_WHATSAPP_NUMBER: ${{ secrets.TWILIO_WHATSAPP_NUMBER }}
           RECIPIENTS: ${{ secrets.RECIPIENTS }}
         run: |
+          ENV_JSON=$(jq -n \
+            --arg sid "$TWILIO_ACCOUNT_SID" \
+            --arg tok "$TWILIO_AUTH_TOKEN" \
+            --arg wnum "$TWILIO_WHATSAPP_NUMBER" \
+            --arg rec "$RECIPIENTS" \
+            '{Variables:{TWILIO_ACCOUNT_SID:$sid,TWILIO_AUTH_TOKEN:$tok,TWILIO_WHATSAPP_NUMBER:$wnum,RECIPIENTS:$rec}}')
+          echo "Updating environment with: $ENV_JSON" | sed 's/\"/"/g'
           aws lambda update-function-configuration \
             --function-name "${{ steps.resolve-fn.outputs.name }}" \
             --timeout 30 \
-            --environment "Variables={\"TWILIO_ACCOUNT_SID\":\"$TWILIO_ACCOUNT_SID\",\"TWILIO_AUTH_TOKEN\":\"$TWILIO_AUTH_TOKEN\",\"TWILIO_WHATSAPP_NUMBER\":\"$TWILIO_WHATSAPP_NUMBER\",\"RECIPIENTS\":\"$RECIPIENTS\"}"
+            --environment "$ENV_JSON"
 
       - name: Wait for configuration update
         run: |
