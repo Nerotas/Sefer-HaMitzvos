@@ -63,19 +63,26 @@ jobs:
           aws lambda delete-function --function-name daily-mitzvah-bot || true
 
       - name: Deploy SAM application
+        env:
+          WEBHOOK_TOKEN: ${{ secrets.WEBHOOK_TOKEN }}
         run: |
           echo "Using SAM managed default bucket with --resolve-s3"
+          PARAMS=(
+            "TwilioAccountSid=${{ secrets.TWILIO_ACCOUNT_SID }}"
+            "TwilioAuthToken=${{ secrets.TWILIO_AUTH_TOKEN }}"
+            "TwilioWhatsAppNumber=${{ secrets.TWILIO_WHATSAPP_NUMBER }}"
+            "Recipients=${{ secrets.RECIPIENTS }}"
+          )
+          # Conditionally include WebhookToken only if provided
+          if [ -n "$WEBHOOK_TOKEN" ]; then
+            PARAMS+=("WebhookToken=$WEBHOOK_TOKEN")
+          fi
           sam deploy \
             --resolve-s3 \
             --no-confirm-changeset \
             --no-fail-on-empty-changeset \
             --stack-name daily-mitzvah-bot-stack \
-            --parameter-overrides \
-              TwilioAccountSid=${{ secrets.TWILIO_ACCOUNT_SID }} \
-              TwilioAuthToken=${{ secrets.TWILIO_AUTH_TOKEN }} \
-              TwilioWhatsAppNumber=${{ secrets.TWILIO_WHATSAPP_NUMBER }} \
-              Recipients="${{ secrets.RECIPIENTS }}" \
-              WebhookToken="${{ secrets.WEBHOOK_TOKEN }}" \
+            --parameter-overrides "${PARAMS[@]}" \
             --capabilities CAPABILITY_IAM \
             --region ${{ secrets.AWS_REGION }}
 
@@ -90,7 +97,7 @@ jobs:
         id: get-url
         run: |
           URL=$(aws cloudformation describe-stacks --stack-name daily-mitzvah-bot-stack --query "Stacks[0].Outputs[?OutputKey=='DailyMitzvahBotFunctionUrl'].OutputValue" --output text)
-          echo "Function URL: $URL" 
+          echo "Function URL: $URL"
           echo "url=$URL" >> $GITHUB_OUTPUT
 
       - name: Warm-up invoke to create log group
