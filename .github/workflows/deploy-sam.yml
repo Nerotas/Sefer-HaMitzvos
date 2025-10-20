@@ -94,6 +94,20 @@ jobs:
             /dev/null \
             --region ${{ secrets.AWS_REGION }} || true
 
+      - name: Functional test (today in America/Chicago)
+        run: |
+          DATE=$(TZ=America/Chicago date +%F)
+          echo "Testing with date: $DATE"
+          PAYLOAD="{\"test_date\":\"$DATE\",\"test_mode\":true}"
+          aws lambda invoke \
+            --function-name "${{ steps.get-fn.outputs.name }}" \
+            --payload "$PAYLOAD" \
+            --cli-binary-format raw-in-base64-out \
+            response.json \
+            --region ${{ secrets.AWS_REGION }} || true
+          echo "Lambda response:"
+          cat response.json || true
+
       - name: Set log retention (safe, optional)
         env:
           LOG_RETENTION_DAYS: ${{ secrets.LOG_RETENTION_DAYS }}

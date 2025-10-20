@@ -91,8 +91,13 @@ jobs:
 
       - name: Test Lambda function
         run: |
+          DATE=$(TZ=America/Chicago date +%F)
+          echo "Testing with date: $DATE"
+          PAYLOAD="{\"test_date\":\"$DATE\",\"test_mode\":true}"
           aws lambda invoke \
             --function-name "${{ steps.resolve-fn.outputs.name }}" \
-            --payload '{}' \
+            --payload "$PAYLOAD" \
+            --cli-binary-format raw-in-base64-out \
             response.json
+          echo "Lambda response:"
           cat response.json
