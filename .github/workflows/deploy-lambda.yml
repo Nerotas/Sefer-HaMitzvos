@@ -19,7 +19,7 @@ on:
         type: boolean
 
 concurrency:
-  group: lambda-deploy-${{ github.ref }}
+  group: lambda-deploy-daily-mitzvah-bot
   cancel-in-progress: false
 
 jobs:
@@ -115,29 +115,54 @@ jobs:
               --zip-file fileb://mitzvah_bot_lambda.zip
           fi
 
-      - name: Publish version and update alias (optional)
+      - name: Wait for code update to complete
+        run: |
+          aws lambda wait function-updated \
+            --function-name "${{ steps.resolve-fn.outputs.name }}"
+
+      - name: Publish version and update alias (optional, with retry)
         env:
           UPDATE_ALIAS: ${{ secrets.UPDATE_ALIAS }}
           ALIAS_NAME: ${{ secrets.LAMBDA_ALIAS_NAME }}
         run: |
           if [ "$UPDATE_ALIAS" = "true" ] && [ -n "$ALIAS_NAME" ]; then
-            VER=$(aws lambda publish-version --function-name "${{ steps.resolve-fn.outputs.name }}" --query Version --output text)
-            echo "Published version $VER"
-            # Try update alias, if it doesn't exist, create it
-            set -e
-            if aws lambda get-alias --function-name "${{ steps.resolve-fn.outputs.name }}" --name "$ALIAS_NAME" >/dev/null 2>&1; then
-              aws lambda update-alias --function-name "${{ steps.resolve-fn.outputs.name }}" --name "$ALIAS_NAME" --function-version "$VER"
-            else
-              aws lambda create-alias --function-name "${{ steps.resolve-fn.outputs.name }}" --name "$ALIAS_NAME" --function-version "$VER"
+            echo "Publishing new version for function ${{ steps.resolve-fn.outputs.name }}"
+            VER=""
+            for i in {1..6}; do
+              set +e
+              VER=$(aws lambda publish-version --function-name "${{ steps.resolve-fn.outputs.name }}" --query Version --output text 2>/tmp/publish_err || true)
+              RC=$?
+              if [ $RC -eq 0 ] && [ -n "$VER" ] && [ "$VER" != "None" ]; then
+                echo "Published version $VER"
+                break
+              fi
+              echo "Publish failed (attempt $i). Retrying in 10s..."
+              cat /tmp/publish_err || true
+              sleep 10
+            done
+            if [ -z "$VER" ] || [ "$VER" = "None" ]; then
+              echo "Failed to publish version after retries" >&2
+              exit 1
             fi
+
+            # Update or create alias with retry
+            for i in {1..6}; do
+              set +e
+              if aws lambda get-alias --function-name "${{ steps.resolve-fn.outputs.name }}" --name "$ALIAS_NAME" >/dev/null 2>&1; then
+                aws lambda update-alias --function-name "${{ steps.resolve-fn.outputs.name }}" --name "$ALIAS_NAME" --function-version "$VER" && OK=1 || OK=0
+              else
+                aws lambda create-alias --function-name "${{ steps.resolve-fn.outputs.name }}" --name "$ALIAS_NAME" --function-version "$VER" && OK=1 || OK=0
+              fi
+              if [ "$OK" = "1" ]; then
+                echo "Alias $ALIAS_NAME now points to version $VER"
+                break
+              fi
+              echo "Alias operation failed (attempt $i). Retrying in 10s..."
+              sleep 10
+            done
           else
             echo "Skipping alias promotion"
           fi
-
-      - name: Wait for code update to complete
-        run: |
-          aws lambda wait function-updated \
-            --function-name "${{ steps.resolve-fn.outputs.name }}"
 
       - name: Update Lambda configuration (optional)
         env:
