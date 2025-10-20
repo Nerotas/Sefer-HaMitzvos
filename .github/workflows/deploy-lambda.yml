@@ -4,6 +4,8 @@ on:
   workflow_run:
     workflows: ["Deploy with AWS SAM"]
     types: [completed]
+  push:
+    branches: [main]
   workflow_dispatch:
     inputs:
       function_name:
@@ -23,13 +25,13 @@ concurrency:
 jobs:
   deploy:
     runs-on: ubuntu-latest
-    if: ${{ github.event_name == 'workflow_dispatch' || github.event.workflow_run.conclusion == 'success' }}
+    if: ${{ github.event_name == 'workflow_dispatch' || (github.event_name == 'workflow_run' && github.event.workflow_run.conclusion == 'success') || github.event_name == 'push' }}
 
     steps:
-      - name: Checkout code (same commit as SAM run or default)
+      - name: Checkout code (commit for this event)
         uses: actions/checkout@v4
         with:
-          ref: ${{ github.event_name == 'workflow_dispatch' && github.sha || github.event.workflow_run.head_sha }}
+          ref: ${{ github.event_name == 'workflow_dispatch' && github.sha || (github.event_name == 'workflow_run' && github.event.workflow_run.head_sha) || github.sha }}
 
       - name: Set up Python
         uses: actions/setup-python@v4
