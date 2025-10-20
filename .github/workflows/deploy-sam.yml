@@ -75,6 +75,7 @@ jobs:
               TwilioAuthToken=${{ secrets.TWILIO_AUTH_TOKEN }} \
               TwilioWhatsAppNumber=${{ secrets.TWILIO_WHATSAPP_NUMBER }} \
               Recipients="${{ secrets.RECIPIENTS }}" \
+              WebhookToken="${{ secrets.WEBHOOK_TOKEN }}" \
             --capabilities CAPABILITY_IAM \
             --region ${{ secrets.AWS_REGION }}
 
@@ -84,6 +85,13 @@ jobs:
           FN=$(aws cloudformation describe-stacks --stack-name daily-mitzvah-bot-stack --query "Stacks[0].Outputs[?OutputKey=='DailyMitzvahBotName'].OutputValue" --output text)
           echo "Resolved function name: $FN"
           echo "name=$FN" >> $GITHUB_OUTPUT
+
+      - name: Get function URL from stack outputs
+        id: get-url
+        run: |
+          URL=$(aws cloudformation describe-stacks --stack-name daily-mitzvah-bot-stack --query "Stacks[0].Outputs[?OutputKey=='DailyMitzvahBotFunctionUrl'].OutputValue" --output text)
+          echo "Function URL: $URL" 
+          echo "url=$URL" >> $GITHUB_OUTPUT
 
       - name: Warm-up invoke to create log group
         run: |

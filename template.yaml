@@ -27,6 +27,11 @@ Parameters:
     Type: String
     Description: Comma-separated list of recipient WhatsApp numbers
 
+  WebhookToken:
+    Type: String
+    Description: Optional shared secret token to protect Function URL (leave blank for public)
+    Default: ""
+
 Resources:
   DailyMitzvahBot:
     Type: AWS::Serverless::Function
@@ -39,6 +44,17 @@ Resources:
           TWILIO_AUTH_TOKEN: !Ref TwilioAuthToken
           TWILIO_WHATSAPP_NUMBER: !Ref TwilioWhatsAppNumber
           RECIPIENTS: !Ref Recipients
+          WEBHOOK_TOKEN: !Ref WebhookToken
+      FunctionUrlConfig:
+        AuthType: NONE
+        Cors:
+          AllowOrigins:
+            - "*"
+          AllowMethods:
+            - GET
+            - POST
+          AllowHeaders:
+            - "*"
 
   # Timezone-aware daily schedule at 10:00 AM America/Chicago using EventBridge Scheduler
   SchedulerInvokeRole:
@@ -94,3 +110,6 @@ Outputs:
   DailyMitzvahBotName:
     Description: Daily Mitzvah Bot Lambda Function Name
     Value: !Ref DailyMitzvahBot
+  DailyMitzvahBotFunctionUrl:
+    Description: Function URL for triggering the bot via HTTP
+    Value: !GetAtt DailyMitzvahBotUrl.FunctionUrl

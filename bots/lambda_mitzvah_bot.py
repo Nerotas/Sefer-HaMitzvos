@@ -8,6 +8,7 @@ import json
 import logging
 import os
 from datetime import datetime
+from zoneinfo import ZoneInfo
 
 # Configure logging for Lambda
 logger = logging.getLogger()
@@ -21,6 +22,42 @@ except ImportError as e:
     logger.error(f"Failed to import Twilio: {e}")
     Client = None
 
+def _extract_http_params(event):
+    """Extract date and token from Lambda Function URL / HTTP API style events."""
+    if not isinstance(event, dict):
+        return None, None, False
+
+    request_ctx = event.get('requestContext') or {}
+    is_http = bool(request_ctx.get('http')) or event.get('version') == '2.0'
+
+    if not is_http:
+        return None, None, False
+
+    q = event.get('queryStringParameters') or {}
+    headers = {k.lower(): v for k, v in (event.get('headers') or {}).items()}
+    body = event.get('body')
+    date_str = q.get('date') or q.get('test_date')
+    token = q.get('token') or headers.get('x-webhook-token')
+
+    # Optionally read JSON body for overrides
+    if not date_str and body:
+        try:
+            if event.get('isBase64Encoded'):
+                import base64
+                body = base64.b64decode(body).decode('utf-8')
+            data = json.loads(body)
+            date_str = data.get('date') or data.get('test_date')
+            token = data.get('token') or token
+        except Exception:
+            pass
+
+    return date_str, token, True
+
+
+def _today_chi_iso():
+    return datetime.now(ZoneInfo('America/Chicago')).date().isoformat()
+
+
 def lambda_handler(event, context):
     """
     AWS Lambda entry point
@@ -30,11 +67,29 @@ def lambda_handler(event, context):
     try:
         logger.info("🕊️ Daily Mitzvah Bot starting on AWS Lambda")
 
-        # Check for test date in event
+        # Check if invoked via HTTP webhook (Lambda Function URL / API Gateway v2)
+        http_date, http_token, is_http = _extract_http_params(event)
+
+        # Fallback to direct invocation contract
         test_date = None
-        if event and 'test_date' in event:
+        if not is_http and event and isinstance(event, dict) and 'test_date' in event:
             test_date = event['test_date']
-            logger.info(f"🧪 Test mode: Using date {test_date}")
+            logger.info(f"🧪 Test mode (invoke): Using date {test_date}")
+        elif is_http:
+            test_date = http_date or _today_chi_iso()
+            logger.info(f"🌐 HTTP invoke: Using date {test_date}")
+
+        # Optional webhook token check
+        webhook_token = os.environ.get('WEBHOOK_TOKEN')
+        if is_http and webhook_token:
+            provided = http_token or ''
+            if provided != webhook_token:
+                logger.warning("Unauthorized webhook attempt")
+                return {
+                    'statusCode': 403,
+                    'headers': {'Content-Type': 'application/json'},
+                    'body': json.dumps({'error': 'Forbidden'})
+                }
 
         # Quick validation
         if not Client:
@@ -54,6 +109,7 @@ def lambda_handler(event, context):
         # Return response for Lambda
         response = {
             'statusCode': 200 if success else 500,
+            'headers': {'Content-Type': 'application/json'},
             'body': json.dumps({
                 'message': 'Daily mitzvah sent successfully' if success else 'Failed to send mitzvah',
                 'test_date': test_date or 'today',
