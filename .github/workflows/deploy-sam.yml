@@ -94,9 +94,17 @@ jobs:
             /dev/null \
             --region ${{ secrets.AWS_REGION }} || true
 
-      - name: Set log retention to 14 days
+      - name: Set log retention (safe, optional)
+        env:
+          LOG_RETENTION_DAYS: ${{ secrets.LOG_RETENTION_DAYS }}
         run: |
+          DAYS="${LOG_RETENTION_DAYS:-14}"
+          LOG_GROUP="/aws/lambda/${{ steps.get-fn.outputs.name }}"
+          echo "Ensuring log group $LOG_GROUP exists and retention is $DAYS days"
+          aws logs create-log-group \
+            --log-group-name "$LOG_GROUP" \
+            --region ${{ secrets.AWS_REGION }} || true
           aws logs put-retention-policy \
-            --log-group-name "/aws/lambda/${{ steps.get-fn.outputs.name }}" \
-            --retention-in-days 14 \
-            --region ${{ secrets.AWS_REGION }}
+            --log-group-name "$LOG_GROUP" \
+            --retention-in-days "$DAYS" \
+            --region ${{ secrets.AWS_REGION }} || true
