@@ -4,6 +4,17 @@ on:
   workflow_run:
     workflows: ["Deploy with AWS SAM"]
     types: [completed]
+  workflow_dispatch:
+    inputs:
+      function_name:
+        description: "Lambda function name to update (overrides stack resolution)"
+        required: false
+        type: string
+      update_env:
+        description: "Update Lambda environment variables from secrets"
+        required: false
+        default: false
+        type: boolean
 
 concurrency:
   group: lambda-deploy-${{ github.ref }}
@@ -12,13 +23,13 @@ concurrency:
 jobs:
   deploy:
     runs-on: ubuntu-latest
-    if: ${{ github.event.workflow_run.conclusion == 'success' }}
+    if: ${{ github.event_name == 'workflow_dispatch' || github.event.workflow_run.conclusion == 'success' }}
 
     steps:
-      - name: Checkout code (same commit as SAM run)
+      - name: Checkout code (same commit as SAM run or default)
         uses: actions/checkout@v4
         with:
-          ref: ${{ github.event.workflow_run.head_sha }}
+          ref: ${{ github.event_name == 'workflow_dispatch' && github.sha || github.event.workflow_run.head_sha }}
 
       - name: Set up Python
         uses: actions/setup-python@v4
@@ -50,12 +61,16 @@ jobs:
           aws-secret-access-key: ${{ secrets.AWS_SECRET_ACCESS_KEY }}
           aws-region: ${{ secrets.AWS_REGION }}
 
-      - name: Resolve Lambda function name from stack (fallback to secret)
+      - name: Resolve Lambda function name (dispatch input > stack > secret)
         id: resolve-fn
         env:
           LAMBDA_FN_SECRET: ${{ secrets.LAMBDA_FUNCTION_NAME }}
         run: |
-          FN=$(aws cloudformation describe-stacks --stack-name daily-mitzvah-bot-stack --query "Stacks[0].Outputs[?OutputKey=='DailyMitzvahBotName'].OutputValue" --output text 2>/dev/null || true)
+          if [ "${{ github.event_name }}" = "workflow_dispatch" ] && [ -n "${{ inputs.function_name }}" ]; then
+            FN="${{ inputs.function_name }}"
+          else
+            FN=$(aws cloudformation describe-stacks --stack-name daily-mitzvah-bot-stack --query "Stacks[0].Outputs[?OutputKey=='DailyMitzvahBotName'].OutputValue" --output text 2>/dev/null || true)
+          fi
           if [ -z "$FN" ] || [ "$FN" = "None" ]; then
             FN="$LAMBDA_FN_SECRET"
           fi
@@ -77,24 +92,32 @@ jobs:
             --function-name "${{ steps.resolve-fn.outputs.name }}"
 
       - name: Update Lambda configuration (optional)
-        if: ${{ secrets.UPDATE_LAMBDA_ENV == 'true' }}
         env:
           TWILIO_ACCOUNT_SID: ${{ secrets.TWILIO_ACCOUNT_SID }}
           TWILIO_AUTH_TOKEN: ${{ secrets.TWILIO_AUTH_TOKEN }}
           TWILIO_WHATSAPP_NUMBER: ${{ secrets.TWILIO_WHATSAPP_NUMBER }}
           RECIPIENTS: ${{ secrets.RECIPIENTS }}
+          UPDATE_LAMBDA_ENV: ${{ secrets.UPDATE_LAMBDA_ENV }}
         run: |
-          ENV_JSON=$(jq -n \
-            --arg sid "$TWILIO_ACCOUNT_SID" \
-            --arg tok "$TWILIO_AUTH_TOKEN" \
-            --arg wnum "$TWILIO_WHATSAPP_NUMBER" \
-            --arg rec "$RECIPIENTS" \
-            '{Variables:{TWILIO_ACCOUNT_SID:$sid,TWILIO_AUTH_TOKEN:$tok,TWILIO_WHATSAPP_NUMBER:$wnum,RECIPIENTS:$rec}}')
-          echo "Updating environment with: $ENV_JSON" | sed 's/\"/"/g'
-          aws lambda update-function-configuration \
-            --function-name "${{ steps.resolve-fn.outputs.name }}" \
-            --timeout 30 \
-            --environment "$ENV_JSON"
+          DO_UPDATE="${UPDATE_LAMBDA_ENV}"
+          if [ "${{ github.event_name }}" = "workflow_dispatch" ] && [ "${{ inputs.update_env }}" = "true" ]; then
+            DO_UPDATE="true"
+          fi
+          if [ "$DO_UPDATE" = "true" ]; then
+            ENV_JSON=$(jq -n \
+              --arg sid "$TWILIO_ACCOUNT_SID" \
+              --arg tok "$TWILIO_AUTH_TOKEN" \
+              --arg wnum "$TWILIO_WHATSAPP_NUMBER" \
+              --arg rec "$RECIPIENTS" \
+              '{Variables:{TWILIO_ACCOUNT_SID:$sid,TWILIO_AUTH_TOKEN:$tok,TWILIO_WHATSAPP_NUMBER:$wnum,RECIPIENTS:$rec}}')
+            echo "Updating environment with: $ENV_JSON" | sed 's/\"/"/g'
+            aws lambda update-function-configuration \
+              --function-name "${{ steps.resolve-fn.outputs.name }}" \
+              --timeout 30 \
+              --environment "$ENV_JSON"
+          else
+            echo "Skipping environment update (UPDATE_LAMBDA_ENV not true)"
+          fi
 
       - name: Wait for configuration update
         run: |
