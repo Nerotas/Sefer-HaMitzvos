@@ -12,6 +12,8 @@ on:
 jobs:
   deploy:
     runs-on: ubuntu-latest
+    env:
+      DELETE_LEGACY_LAMBDA: ${{ secrets.DELETE_LEGACY_LAMBDA }}
     concurrency:
       group: sam-deploy-${{ github.ref }}
       cancel-in-progress: false
@@ -55,6 +57,11 @@ jobs:
       - name: Build SAM application
         run: sam build
 
+      - name: Remove legacy Lambda function if present (optional)
+        if: ${{ env.DELETE_LEGACY_LAMBDA == 'true' }}
+        run: |
+          aws lambda delete-function --function-name daily-mitzvah-bot || true
+
       - name: Deploy SAM application
         run: |
           echo "Using SAM managed default bucket with --resolve-s3"
@@ -71,10 +78,17 @@ jobs:
             --capabilities CAPABILITY_IAM \
             --region ${{ secrets.AWS_REGION }}
 
+      - name: Get function name from stack outputs
+        id: get-fn
+        run: |
+          FN=$(aws cloudformation describe-stacks --stack-name daily-mitzvah-bot-stack --query "Stacks[0].Outputs[?OutputKey=='DailyMitzvahBotName'].OutputValue" --output text)
+          echo "Resolved function name: $FN"
+          echo "name=$FN" >> $GITHUB_OUTPUT
+
       - name: Warm-up invoke to create log group
         run: |
           aws lambda invoke \
-            --function-name daily-mitzvah-bot \
+            --function-name "${{ steps.get-fn.outputs.name }}" \
             --payload '{"test_date":"1970-01-01"}' \
             --cli-binary-format raw-in-base64-out \
             /dev/null \
@@ -83,6 +97,6 @@ jobs:
       - name: Set log retention to 14 days
         run: |
           aws logs put-retention-policy \
-            --log-group-name "/aws/lambda/daily-mitzvah-bot" \
+            --log-group-name "/aws/lambda/${{ steps.get-fn.outputs.name }}" \
             --retention-in-days 14 \
             --region ${{ secrets.AWS_REGION }}

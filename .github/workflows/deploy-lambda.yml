@@ -46,16 +46,31 @@ jobs:
           aws-secret-access-key: ${{ secrets.AWS_SECRET_ACCESS_KEY }}
           aws-region: ${{ secrets.AWS_REGION }}
 
+      - name: Resolve Lambda function name from stack (fallback to secret)
+        id: resolve-fn
+        env:
+          LAMBDA_FN_SECRET: ${{ secrets.LAMBDA_FUNCTION_NAME }}
+        run: |
+          FN=$(aws cloudformation describe-stacks --stack-name daily-mitzvah-bot-stack --query "Stacks[0].Outputs[?OutputKey=='DailyMitzvahBotName'].OutputValue" --output text 2>/dev/null || true)
+          if [ -z "$FN" ] || [ "$FN" = "None" ]; then
+            FN="$LAMBDA_FN_SECRET"
+          fi
+          if [ -z "$FN" ]; then
+            echo "Could not resolve Lambda function name" >&2
+            exit 1
+          fi
+          echo "name=$FN" >> $GITHUB_OUTPUT
+
       - name: Deploy to Lambda
         run: |
           aws lambda update-function-code \
-            --function-name ${{ secrets.LAMBDA_FUNCTION_NAME }} \
+            --function-name "${{ steps.resolve-fn.outputs.name }}" \
             --zip-file fileb://mitzvah_bot_lambda.zip
 
       - name: Wait for code update to complete
         run: |
           aws lambda wait function-updated \
-            --function-name ${{ secrets.LAMBDA_FUNCTION_NAME }}
+            --function-name "${{ steps.resolve-fn.outputs.name }}"
 
       - name: Update Lambda configuration (if needed)
         env:
@@ -65,19 +80,19 @@ jobs:
           RECIPIENTS: ${{ secrets.RECIPIENTS }}
         run: |
           aws lambda update-function-configuration \
-            --function-name ${{ secrets.LAMBDA_FUNCTION_NAME }} \
+            --function-name "${{ steps.resolve-fn.outputs.name }}" \
             --timeout 30 \
             --environment "Variables={\"TWILIO_ACCOUNT_SID\":\"$TWILIO_ACCOUNT_SID\",\"TWILIO_AUTH_TOKEN\":\"$TWILIO_AUTH_TOKEN\",\"TWILIO_WHATSAPP_NUMBER\":\"$TWILIO_WHATSAPP_NUMBER\",\"RECIPIENTS\":\"$RECIPIENTS\"}"
 
       - name: Wait for configuration update
         run: |
           aws lambda wait function-updated \
-            --function-name ${{ secrets.LAMBDA_FUNCTION_NAME }}
+            --function-name "${{ steps.resolve-fn.outputs.name }}"
 
       - name: Test Lambda function
         run: |
           aws lambda invoke \
-            --function-name ${{ secrets.LAMBDA_FUNCTION_NAME }} \
+            --function-name "${{ steps.resolve-fn.outputs.name }}" \
             --payload '{}' \
             response.json
           cat response.json

@@ -31,7 +31,6 @@ Resources:
   DailyMitzvahBot:
     Type: AWS::Serverless::Function
     Properties:
-      FunctionName: daily-mitzvah-bot
       CodeUri: .
       Handler: bots/lambda_mitzvah_bot.lambda_handler
       Environment:
@@ -92,3 +91,6 @@ Outputs:
   DailyMitzvahBotFunction:
     Description: Daily Mitzvah Bot Lambda Function ARN
     Value: !GetAtt DailyMitzvahBot.Arn
+  DailyMitzvahBotName:
+    Description: Daily Mitzvah Bot Lambda Function Name
+    Value: !Ref DailyMitzvahBot
