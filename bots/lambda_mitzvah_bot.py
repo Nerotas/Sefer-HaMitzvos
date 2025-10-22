@@ -760,6 +760,8 @@ Fulfill this mitzvah with joy and intention! 💫🙏
 
 _—Daily Mitzvah Bot_"""
 
+        # Append standard unsubscribe blurb for compliance/clarity
+        message += "\n\nReply STOP to unsubscribe."
         return message
 
     def send_to_recipient(self, recipient, message, mitzvah_data=None):

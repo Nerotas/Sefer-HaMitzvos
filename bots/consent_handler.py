@@ -112,6 +112,7 @@ def _handle_twilio_inbound(headers, form):
     message_sid = form.get("MessageSid") or form.get("SmsMessageSid") or ""
 
     txt = body_text.lower()
+    # Treat exact STOP/UNSUBSCRIBE/CANCEL as opt-out
     if txt in ("stop", "unsubscribe", "cancel"):
         _upsert_subscriber(
             phone=from_num,
@@ -121,7 +122,19 @@ def _handle_twilio_inbound(headers, form):
         )
         return _respond(200, _twiml("You are unsubscribed. Reply JOIN MITZVAH to re-subscribe."), is_xml=True)
 
-    if "join" in txt or "start" in txt or txt == "yes" or txt == "join mitzvah":
+    # Allow opt-in via JOIN/START/YES/JOIN MITZVAH or the word SUBSCRIBE (but not 'unsubscribe')
+    def _has_word(text: str, word: str) -> bool:
+        t = " " + text.replace("\n", " ") + " "
+        w = f" {word} "
+        return w in t or t.startswith(w) or t.endswith(w)
+
+    if (
+        "join" in txt
+        or "start" in txt
+        or txt == "yes"
+        or txt == "join mitzvah"
+        or _has_word(txt, "subscribe")
+    ):
         _upsert_subscriber(
             phone=from_num,
             status="opted_in",
