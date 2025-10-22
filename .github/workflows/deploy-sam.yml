@@ -220,7 +220,14 @@ jobs:
       - name: Create Lambda package (${{ matrix.target.name }})
         run: |
           mkdir -p lambda_package
-          cp "${{ matrix.target.file }}" lambda_package/
+          # Preserve the bots/ directory structure to match Handler path (bots/lambda_mitzvah_bot or bots/consent_handler)
+          FILE="${{ matrix.target.file }}"
+          if [[ "$FILE" == bots/* ]]; then
+            mkdir -p lambda_package/bots
+            cp "$FILE" lambda_package/bots/
+          else
+            cp "$FILE" lambda_package/
+          fi
           if [ -n "${{ matrix.target.extra }}" ] && [ -f "${{ matrix.target.extra }}" ]; then
             cp "${{ matrix.target.extra }}" lambda_package/
           fi
