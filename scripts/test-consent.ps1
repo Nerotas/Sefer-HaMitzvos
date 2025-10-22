@@ -156,7 +156,10 @@ function Verify-Ddb {
     [string]$Phone
   )
   $key = @{ phone = @{ S = $Phone } } | ConvertTo-Json -Compress
-  $raw = aws dynamodb get-item --table-name $Table --key $key --region $Region | Out-String
+  $tmp = New-TemporaryFile
+  Set-Content -Path $tmp -Value $key -Encoding UTF8
+  $raw = aws dynamodb get-item --table-name $Table --key file://$tmp --region $Region | Out-String
+  Remove-Item -Path $tmp -Force -ErrorAction SilentlyContinue
   Write-Host "DynamoDB get-item result:" -ForegroundColor Cyan
   Write-Host $raw
 }
