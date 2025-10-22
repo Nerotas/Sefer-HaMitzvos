@@ -127,7 +127,9 @@ function Invoke-WebJson {
     [string]$Action,
     [bool]$Consent
   )
-  $payload = @{ phone = $Phone; action = $Action; consent = ($Consent ? 'true' : 'false') } | ConvertTo-Json -Depth 3
+  # PowerShell 5.1 doesn't support the C#-style ternary operator
+  $consentStr = if ($Consent) { 'true' } else { 'false' }
+  $payload = @{ phone = $Phone; action = $Action; consent = $consentStr } | ConvertTo-Json -Depth 3
   if ($VerboseLogs) { Write-Host "POST $ConsentUrl`n$payload" }
   return Invoke-RestMethod -Uri $ConsentUrl -Method Post -ContentType 'application/json' -Body $payload
 }
