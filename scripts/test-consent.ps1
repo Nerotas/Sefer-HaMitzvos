@@ -71,6 +71,7 @@ param(
   [string]$ConsentUrl,
 
   [switch]$Verify,
+  [switch]$OnlyVerify,
   [switch]$VerboseLogs
 )
 
@@ -167,6 +168,13 @@ if (-not $ConsentUrl -or $ConsentUrl -eq '') {
     Write-Error "Could not resolve Consent Function URL from stack '$StackName' in region '$Region'. Pass -ConsentUrl explicitly."
     exit 2
   }
+}
+
+# If we only want to verify DynamoDB without sending a request
+if ($OnlyVerify) {
+  $table = Get-SubscribersTableName -StackName $StackName
+  Verify-Ddb -Region $Region -Table $table -Phone $Phone
+  exit 0
 }
 
 # Compose Twilio From/To for Twilio-style actions
