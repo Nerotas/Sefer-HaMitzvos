@@ -1,7 +1,0 @@
-name: "[RETIRED] No-op"
-on: {}
-jobs:
-  noop:
-    runs-on: ubuntu-latest
-    steps:
-      - run: echo "Workflow retired; use 'Deploy with AWS SAM' instead."
