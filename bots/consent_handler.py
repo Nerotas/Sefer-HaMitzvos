@@ -105,6 +105,16 @@ def _upsert_subscriber(phone: str, status: str, source: str, evidence: dict):
     return item
 
 
+def _get_subscriber(phone: str):
+    """Fetch an existing subscriber record by phone, if present."""
+    try:
+        table = _get_table()
+        resp = table.get_item(Key={"phone": phone})
+        return resp.get("Item")
+    except Exception:
+        return None
+
+
 def _handle_twilio_inbound(headers, form):
     body_text = (form.get("Body") or "").strip()
     from_num = _strip_channel_prefix(form.get("From") or "")
@@ -112,8 +122,13 @@ def _handle_twilio_inbound(headers, form):
     message_sid = form.get("MessageSid") or form.get("SmsMessageSid") or ""
 
     txt = body_text.lower()
+    # Fetch current status (for idempotent confirmations)
+    existing = _get_subscriber(from_num) or {}
+    current_status = existing.get("consent_status")
     # Treat exact STOP/UNSUBSCRIBE/CANCEL as opt-out
     if txt in ("stop", "unsubscribe", "cancel"):
+        if current_status == "opted_out":
+            return _respond(200, _twiml("You are already unsubscribed. Reply JOIN MITZVAH to re-subscribe."), is_xml=True)
         _upsert_subscriber(
             phone=from_num,
             status="opted_out",
@@ -135,6 +150,8 @@ def _handle_twilio_inbound(headers, form):
         or txt == "join mitzvah"
         or _has_word(txt, "subscribe")
     ):
+        if current_status == "opted_in":
+            return _respond(200, _twiml("You’re already subscribed to Daily Mitzvah. Reply STOP to opt out."), is_xml=True)
         _upsert_subscriber(
             phone=from_num,
             status="opted_in",
