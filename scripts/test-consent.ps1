@@ -157,8 +157,10 @@ function Verify-Ddb {
   )
   $key = @{ phone = @{ S = $Phone } } | ConvertTo-Json -Compress
   $tmp = New-TemporaryFile
-  Set-Content -Path $tmp -Value $key -Encoding UTF8
-  $raw = aws dynamodb get-item --table-name $Table --key file://$tmp --region $Region | Out-String
+  # Write UTF-8 without BOM for AWS CLI JSON parsing compatibility on Windows PowerShell 5.1
+  $utf8NoBom = New-Object System.Text.UTF8Encoding($false)
+  [System.IO.File]::WriteAllText($tmp.FullName, $key, $utf8NoBom)
+  $raw = aws dynamodb get-item --table-name $Table --key file://$($tmp.FullName) --region $Region | Out-String
   Remove-Item -Path $tmp -Force -ErrorAction SilentlyContinue
   Write-Host "DynamoDB get-item result:" -ForegroundColor Cyan
   Write-Host $raw
