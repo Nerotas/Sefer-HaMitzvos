@@ -9,7 +9,13 @@ on:
       - "template.yaml"
       - "web/optin.html"
       - ".github/workflows/deploy-sam.yml"
-  workflow_dispatch: # Allow manual trigger
+  workflow_dispatch:
+    inputs:
+      delete_legacy:
+        description: "Delete legacy function 'daily-mitzvah-bot' before deploy"
+        required: false
+        default: false
+        type: boolean
 
 jobs:
   deploy:
@@ -92,7 +98,7 @@ jobs:
           fi
 
       - name: Remove legacy Lambda function if present (optional)
-        if: ${{ env.DELETE_LEGACY_LAMBDA == 'true' }}
+        if: ${{ env.DELETE_LEGACY_LAMBDA == 'true' || (github.event_name == 'workflow_dispatch' && github.event.inputs.delete_legacy == 'true') }}
         run: |
           aws lambda delete-function --function-name daily-mitzvah-bot || true
 
