@@ -92,7 +92,21 @@ function Get-ConsentUrl {
   try {
     $url = aws cloudformation describe-stacks --stack-name $StackName --query "Stacks[0].Outputs[?OutputKey=='ConsentFunctionUrl'].OutputValue" --output text --region $Region 2>$null
     if (-not $url -or $url -eq 'None') { return $null }
-    return $url.Trim()
+    $url = $url.Trim()
+
+    # If the output is an ARN (older stack output), try to resolve the Function URL via Lambda API
+    if ($url -notmatch '^https?://') {
+      if ($url -match '^arn:aws:lambda:[^:]+:\d{12}:function:(?<fn>[^:]+)$') {
+        $fnName = $Matches['fn']
+        try {
+          $fnUrl = aws lambda get-function-url-config --function-name $fnName --region $Region --query 'FunctionUrl' --output text 2>$null
+          if ($fnUrl -and $fnUrl -ne 'None') { return $fnUrl.Trim() }
+        } catch {}
+      }
+      # Not a URL and couldn't resolve; return null to force explicit override
+      return $null
+    }
+    return $url
   } catch {
     return $null
   }
