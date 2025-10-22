@@ -125,6 +125,17 @@ def _handle_twilio_inbound(headers, form):
     # Fetch current status (for idempotent confirmations)
     existing = _get_subscriber(from_num) or {}
     current_status = existing.get("consent_status")
+
+    # STATUS inquiry (respond with current state and guidance)
+    if txt.startswith("status"):
+        if not existing:
+            return _respond(200, _twiml("You are not subscribed yet. Reply JOIN MITZVAH to subscribe, or STOP to opt out."), is_xml=True)
+        if current_status == "opted_in":
+            return _respond(200, _twiml("You’re subscribed to Daily Mitzvah. Reply STOP to opt out."), is_xml=True)
+        if current_status == "opted_out":
+            return _respond(200, _twiml("You are unsubscribed. Reply JOIN MITZVAH to re-subscribe."), is_xml=True)
+        # Unknown/legacy state
+        return _respond(200, _twiml("Your status is not set. Reply JOIN MITZVAH to subscribe, or STOP to opt out."), is_xml=True)
     # Treat exact STOP/UNSUBSCRIBE/CANCEL as opt-out
     if txt in ("stop", "unsubscribe", "cancel"):
         if current_status == "opted_out":
