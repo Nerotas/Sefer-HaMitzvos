@@ -24,21 +24,22 @@ except ImportError as e:
     Client = None
 
 def _extract_http_params(event):
-    """Extract date and token from Lambda Function URL / HTTP API style events."""
+    """Extract date, token, and optional test recipient from HTTP-style events."""
     if not isinstance(event, dict):
-        return None, None, False
+        return None, None, None, False
 
     request_ctx = event.get('requestContext') or {}
     is_http = bool(request_ctx.get('http')) or event.get('version') == '2.0'
 
     if not is_http:
-        return None, None, False
+        return None, None, None, False
 
     q = event.get('queryStringParameters') or {}
     headers = {k.lower(): v for k, v in (event.get('headers') or {}).items()}
     body = event.get('body')
     date_str = q.get('date') or q.get('test_date')
     token = q.get('token') or headers.get('x-webhook-token')
+    test_recipient = q.get('test_recipient') or q.get('recipient') or q.get('to')
 
     # Optionally read JSON body for overrides
     if not date_str and body:
@@ -49,10 +50,11 @@ def _extract_http_params(event):
             data = json.loads(body)
             date_str = data.get('date') or data.get('test_date')
             token = data.get('token') or token
+            test_recipient = data.get('test_recipient') or data.get('recipient') or data.get('to') or test_recipient
         except Exception:
             pass
 
-    return date_str, token, True
+    return date_str, token, test_recipient, True
 
 
 def _today_chi_iso():
@@ -69,7 +71,7 @@ def lambda_handler(event, context):
         logger.info("✡️ Daily Mitzvah Bot starting on AWS Lambda")
 
         # Check if invoked via HTTP webhook (Lambda Function URL / API Gateway v2)
-        http_date, http_token, is_http = _extract_http_params(event)
+        http_date, http_token, http_test_recipient, is_http = _extract_http_params(event)
 
         # Fallback to direct invocation contract
         test_date = None
@@ -79,6 +81,13 @@ def lambda_handler(event, context):
         elif is_http:
             test_date = http_date or _today_chi_iso()
             logger.info(f"🌐 HTTP invoke: Using date {test_date}")
+
+        # Optional single-recipient override for tests
+        test_recipient = None
+        if is_http:
+            test_recipient = http_test_recipient
+        elif event and isinstance(event, dict):
+            test_recipient = event.get('test_recipient') or event.get('recipient') or event.get('to')
 
         # Optional webhook token check
         webhook_token = os.environ.get('WEBHOOK_TOKEN')
@@ -99,6 +108,14 @@ def lambda_handler(event, context):
         # Initialize the bot with timeout protection
         logger.info("Initializing bot...")
         bot = MitzvahLambdaBot()
+
+        # If a test recipient was provided, override the recipients list to a single number
+        if test_recipient:
+            single = str(test_recipient).strip()
+            if single.startswith('whatsapp:'):
+                single = single[len('whatsapp:'):]
+            bot.recipients = [single]
+            logger.info(f"🧪 Test recipient override in effect; will only send to: {single}")
 
         logger.info("Bot initialized, sending daily mitzvah...")
 
