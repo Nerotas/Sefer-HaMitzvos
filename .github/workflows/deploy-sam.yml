@@ -240,8 +240,11 @@ jobs:
         env:
           FN_BOT: ${{ secrets.LAMBDA_FUNCTION_NAME_BOT }}
           FN_CONSENT: ${{ secrets.LAMBDA_FUNCTION_NAME_CONSENT }}
+          AWS_REGION: ${{ secrets.AWS_REGION }}
         run: |
-          case "${{ matrix.target.name }}" in
+          set -e
+          TARGET="${{ matrix.target.name }}"
+          case "$TARGET" in
             bot)
               FN="$FN_BOT"
               ;;
@@ -249,11 +252,34 @@ jobs:
               FN="$FN_CONSENT"
               ;;
           esac
+
+          # Helper to check if a function exists
+          function fn_exists() {
+            aws lambda get-function --function-name "$1" --region "$AWS_REGION" >/dev/null 2>&1
+          }
+
+          # If secret not set or points to a non-existent function, try to resolve from CloudFormation Outputs
+          if [ -z "$FN" ] || ! fn_exists "$FN"; then
+            echo "Secret for '$TARGET' is empty or invalid; attempting fallback resolution from CloudFormation outputs..."
+            if [ "$TARGET" = "bot" ]; then
+              FN=$(aws cloudformation describe-stacks --stack-name daily-mitzvah-bot-stack --query "Stacks[0].Outputs[?OutputKey=='DailyMitzvahBotName'].OutputValue" --output text --region "$AWS_REGION" || true)
+            else
+              FN=$(aws cloudformation describe-stacks --stack-name daily-mitzvah-bot-stack --query "Stacks[0].Outputs[?OutputKey=='ConsentHandlerName'].OutputValue" --output text --region "$AWS_REGION" || true)
+            fi
+          fi
+
           if [ -z "$FN" ]; then
-            echo "No explicit function name secret set for ${{ matrix.target.name }}; skipping this target."
+            echo "Could not resolve function name for target '$TARGET'. Set the appropriate secret or ensure the stack outputs include the name. Skipping."
             echo "skip=true" >> $GITHUB_OUTPUT
             exit 0
           fi
+
+          if ! fn_exists "$FN"; then
+            echo "Resolved function name '$FN' for target '$TARGET' does not exist in region $AWS_REGION. Skipping."
+            echo "skip=true" >> $GITHUB_OUTPUT
+            exit 0
+          fi
+
           echo "Resolved function name: $FN"
           echo "name=$FN" >> $GITHUB_OUTPUT
 

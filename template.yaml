@@ -158,3 +158,6 @@ Outputs:
   ConsentFunctionUrl:
     Description: Function URL for the consent capture endpoint
     Value: !Ref ConsentHandlerUrl
+  ConsentHandlerName:
+    Description: Consent Handler Lambda Function Name
+    Value: !Ref ConsentHandler
