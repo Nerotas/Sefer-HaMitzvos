@@ -1,21 +1,7 @@
-name: "[RETIRED] Deploy Lambda Functions (explicit names)"
-
-on:
-  workflow_dispatch:
-    inputs:
-      update_env:
-        description: "Update bot Lambda environment variables from secrets"
-        required: false
-        default: false
-        type: boolean
-
-concurrency:
-  group: lambda-deploy-daily-mitzvah-bot
-  cancel-in-progress: false
-
+name: "[RETIRED] No-op"
+on: {}
 jobs:
   noop:
     runs-on: ubuntu-latest
     steps:
-      - name: Retired notice
-        run: echo "This workflow is retired. Use 'Deploy with AWS SAM' which now includes Lambda updates."
+      - run: echo "Workflow retired; use 'Deploy with AWS SAM' instead."
