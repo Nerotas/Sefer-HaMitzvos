@@ -178,3 +178,163 @@ jobs:
             --log-group-name "$LOG_GROUP" \
             --retention-in-days "$DAYS" \
             --region ${{ secrets.AWS_REGION }} || true
+
+  lambda-update:
+    name: Update Lambda Functions (explicit names)
+    runs-on: ubuntu-latest
+    needs: deploy
+    if: ${{ needs.deploy.result == 'success' }}
+    strategy:
+      fail-fast: false
+      matrix:
+        target:
+          - name: bot
+            file: bots/lambda_mitzvah_bot.py
+            zip: mitzvah_bot_lambda.zip
+            extra: Schedule.csv
+            secretKey: LAMBDA_FUNCTION_NAME_BOT
+          - name: consent
+            file: bots/consent_handler.py
+            zip: consent_handler_lambda.zip
+            extra: ""
+            secretKey: LAMBDA_FUNCTION_NAME_CONSENT
+
+    steps:
+      - name: Checkout code
+        uses: actions/checkout@v4
+
+      - name: Set up Python
+        uses: actions/setup-python@v4
+        with:
+          python-version: "3.11"
+
+      - name: Install dependencies
+        run: |
+          python -m pip install --upgrade pip
+          pip install twilio requests
+
+      - name: Ensure jq is available
+        run: |
+          command -v jq >/dev/null 2>&1 || sudo apt-get update && sudo apt-get install -y jq
+
+      - name: Create Lambda package (${{ matrix.target.name }})
+        run: |
+          mkdir -p lambda_package
+          cp "${{ matrix.target.file }}" lambda_package/
+          if [ -n "${{ matrix.target.extra }}" ] && [ -f "${{ matrix.target.extra }}" ]; then
+            cp "${{ matrix.target.extra }}" lambda_package/
+          fi
+          pip install twilio requests -t lambda_package/
+          cd lambda_package
+          zip -r "../${{ matrix.target.zip }}" .
+
+      - name: Configure AWS credentials
+        uses: aws-actions/configure-aws-credentials@v4
+        with:
+          aws-access-key-id: ${{ secrets.AWS_ACCESS_KEY_ID }}
+          aws-secret-access-key: ${{ secrets.AWS_SECRET_ACCESS_KEY }}
+          aws-region: ${{ secrets.AWS_REGION }}
+
+      - name: Resolve explicit Lambda function name (${{ matrix.target.name }})
+        id: resolve-fn
+        env:
+          FN_BOT: ${{ secrets.LAMBDA_FUNCTION_NAME_BOT }}
+          FN_CONSENT: ${{ secrets.LAMBDA_FUNCTION_NAME_CONSENT }}
+        run: |
+          case "${{ matrix.target.name }}" in
+            bot)
+              FN="$FN_BOT"
+              ;;
+            consent)
+              FN="$FN_CONSENT"
+              ;;
+          esac
+          if [ -z "$FN" ]; then
+            echo "No explicit function name secret set for ${{ matrix.target.name }}; skipping this target."
+            echo "skip=true" >> $GITHUB_OUTPUT
+            exit 0
+          fi
+          echo "Resolved function name: $FN"
+          echo "name=$FN" >> $GITHUB_OUTPUT
+
+      - name: Upload zip to S3 (optional) (${{ matrix.target.name }})
+        id: upload-s3
+        if: steps.resolve-fn.outputs.skip != 'true'
+        env:
+          S3_BUCKET: ${{ secrets.S3_BUCKET }}
+          S3_PREFIX: ${{ secrets.S3_PREFIX }}
+          GITHUB_SHA: ${{ github.sha }}
+        run: |
+          if [ -n "$S3_BUCKET" ]; then
+            PREFIX=${S3_PREFIX:-lambda}
+            KEY="$PREFIX/${{ matrix.target.name }}-$GITHUB_SHA.zip"
+            echo "Uploading ${{ matrix.target.zip }} to s3://$S3_BUCKET/$KEY"
+            aws s3 cp "${{ matrix.target.zip }}" "s3://$S3_BUCKET/$KEY"
+            echo "key=$KEY" >> $GITHUB_OUTPUT
+          else
+            echo "S3 bucket not set; will use direct zip upload"
+            echo "key=" >> $GITHUB_OUTPUT
+          fi
+
+      - name: Deploy to Lambda (${{ matrix.target.name }})
+        if: steps.resolve-fn.outputs.skip != 'true'
+        env:
+          S3_BUCKET: ${{ secrets.S3_BUCKET }}
+        run: |
+          echo "Checking Lambda update status before deploy..."
+          for i in {1..60}; do
+            STATUS=$(aws lambda get-function-configuration --function-name "${{ steps.resolve-fn.outputs.name }}" --query 'LastUpdateStatus' --output text 2>/dev/null || echo "Unknown")
+            REASON=$(aws lambda get-function-configuration --function-name "${{ steps.resolve-fn.outputs.name }}" --query 'LastUpdateStatusReason' --output text 2>/dev/null || echo "")
+            echo "Current status: $STATUS ${REASON:+- $REASON}"
+            if [ "$STATUS" != "InProgress" ]; then
+              break
+            fi
+            sleep 10
+          done
+
+          if [ -n "${{ steps.upload-s3.outputs.key }}" ]; then
+            aws lambda update-function-code \
+              --function-name "${{ steps.resolve-fn.outputs.name }}" \
+              --s3-bucket "$S3_BUCKET" \
+              --s3-key "${{ steps.upload-s3.outputs.key }}"
+          else
+            aws lambda update-function-code \
+              --function-name "${{ steps.resolve-fn.outputs.name }}" \
+              --zip-file fileb://"${{ matrix.target.zip }}"
+          fi
+
+      - name: Wait for code update to complete (poll) (${{ matrix.target.name }})
+        if: steps.resolve-fn.outputs.skip != 'true'
+        run: |
+          echo "Waiting for LastUpdateStatus == Successful"
+          for i in {1..90}; do
+            STATUS=$(aws lambda get-function-configuration --function-name "${{ steps.resolve-fn.outputs.name }}" --query 'LastUpdateStatus' --output text)
+            REASON=$(aws lambda get-function-configuration --function-name "${{ steps.resolve-fn.outputs.name }}" --query 'LastUpdateStatusReason' --output text)
+            echo "Status: $STATUS ${REASON:+- $REASON}"
+            if [ "$STATUS" = "Successful" ]; then
+              break
+            fi
+            if [ "$STATUS" = "Failed" ]; then
+              echo "Lambda update failed: $REASON" >&2
+              exit 1
+            fi
+            sleep 10
+          done
+          if [ "$STATUS" != "Successful" ]; then
+            echo "Timed out waiting for Lambda update to complete" >&2
+            exit 1
+          fi
+
+      - name: Test Lambda function (bot only)
+        if: steps.resolve-fn.outputs.skip != 'true' && matrix.target.name == 'bot'
+        run: |
+          DATE=$(TZ=America/Chicago date +%F)
+          echo "Testing with date: $DATE"
+          PAYLOAD="{\"test_date\":\"$DATE\",\"test_mode\":true}"
+          aws lambda invoke \
+            --function-name "${{ steps.resolve-fn.outputs.name }}" \
+            --payload "$PAYLOAD" \
+            --cli-binary-format raw-in-base64-out \
+            response.json || true
+          echo "Lambda response:"
+          cat response.json || true
