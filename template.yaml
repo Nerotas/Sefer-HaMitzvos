@@ -84,10 +84,10 @@ Resources:
   DailyMitzvahSchedule:
     Type: AWS::Scheduler::Schedule
     Properties:
-      Name: !Sub "daily-mitzvah-10am-chicago-${AWS::StackName}"
-      Description: "Daily Mitzvah Bot - 10:00 AM America/Chicago"
+      Name: !Sub "daily-mitzvah-8am-chicago-${AWS::StackName}"
+      Description: "Daily Mitzvah Bot - 8:00 AM America/Chicago (Texas Time)"
       State: ENABLED
-      ScheduleExpression: "cron(0 10 * * ? *)"
+      ScheduleExpression: "cron(0 8 * * ? *)"
       ScheduleExpressionTimezone: "America/Chicago"
       FlexibleTimeWindow:
         Mode: "OFF"
