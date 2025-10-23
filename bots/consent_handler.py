@@ -121,13 +121,30 @@ def _handle_twilio_inbound(headers, form):
     to_num = _strip_channel_prefix(form.get("To") or "")
     message_sid = form.get("MessageSid") or form.get("SmsMessageSid") or ""
 
+    logger.info(f"Twilio inbound: From={from_num}, To={to_num}, Body='{body_text}', MessageSid={message_sid}")
+
     txt = body_text.lower()
     # Fetch current status (for idempotent confirmations)
     existing = _get_subscriber(from_num) or {}
     current_status = existing.get("consent_status")
+    
+    logger.info(f"Current subscriber status for {from_num}: {current_status}")
 
     # STATUS inquiry (respond with current state and guidance)
     if txt.startswith("status"):
+        logger.info(f"Processing STATUS request for {from_num}")
+        if not existing:
+            logger.info("User not found, sending 'not subscribed' response")
+            return _respond(200, _twiml("You are not subscribed yet. Reply JOIN MITZVAH to subscribe, or STOP to opt out."), is_xml=True)
+        if current_status == "opted_in":
+            logger.info("User is opted in, sending 'subscribed' response")
+            return _respond(200, _twiml("You're subscribed to Daily Mitzvah. Reply STOP to opt out."), is_xml=True)
+        if current_status == "opted_out":
+            logger.info("User is opted out, sending 'unsubscribed' response")
+            return _respond(200, _twiml("You are unsubscribed. Reply JOIN MITZVAH to re-subscribe."), is_xml=True)
+        # Unknown/legacy state
+        logger.info("User has unknown status, sending guidance")
+        return _respond(200, _twiml("Your status is not set. Reply JOIN MITZVAH to subscribe, or STOP to opt out."), is_xml=True)
         if not existing:
             return _respond(200, _twiml("You are not subscribed yet. Reply JOIN MITZVAH to subscribe, or STOP to opt out."), is_xml=True)
         if current_status == "opted_in":
@@ -198,6 +215,8 @@ def lambda_handler(event, context):
     try:
         is_http, method, headers, query, body_raw, body_json, body_form = _parse_event(event)
         logger.info(f"Consent handler invoked: method={method} headers={list(headers.keys())}")
+        logger.info(f"Body form data: {body_form}")
+        logger.info(f"Body raw: {body_raw}")
 
         if method == "GET":
             # Simple health/info endpoint
@@ -209,8 +228,10 @@ def lambda_handler(event, context):
 
         # POST: Twilio inbound vs web form
         if body_form.get("From") and (body_form.get("Body") or body_form.get("SmsBody")):
+            logger.info("Processing Twilio inbound webhook")
             return _handle_twilio_inbound(headers, body_form)
 
+        logger.info("Processing as web opt-in")
         return _handle_web_optin(query, body_json, body_form)
 
     except Exception as e:
