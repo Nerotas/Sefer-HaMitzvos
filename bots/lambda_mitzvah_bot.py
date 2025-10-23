@@ -790,6 +790,14 @@ _—Daily Mitzvah Bot_"""
             template_sid = os.environ.get('WHATSAPP_TEMPLATE_SID')
             use_template = os.environ.get('USE_WHATSAPP_TEMPLATE', 'false').lower() == 'true'
 
+            # Force WhatsApp format for all messages
+            whatsapp_recipient = recipient if recipient.startswith('whatsapp:') else f'whatsapp:{recipient}'
+            whatsapp_sender = f'whatsapp:{self.whatsapp_number}'
+            
+            # Check for WhatsApp Business Template (optional advanced feature)
+            template_sid = os.environ.get('WHATSAPP_TEMPLATE_SID')
+            use_template = os.environ.get('USE_WHATSAPP_TEMPLATE', 'false').lower() == 'true'
+            
             if template_sid and use_template and mitzvah_data:
                 # Use WhatsApp Business Message Template
                 logger.info(f"Using WhatsApp template: {template_sid}")
@@ -822,18 +830,19 @@ _—Daily Mitzvah Bot_"""
                         "4": sources_text or 'Traditional Sources',
                         "5": links_text or 'Available on Sefaria'
                     }),
-                    from_=f'whatsapp:{self.whatsapp_number}',
-                    to=f'whatsapp:{recipient}'
+                    from_=whatsapp_sender,
+                    to=whatsapp_recipient
                 )
-                logger.info(f"WhatsApp template message sent to {recipient}")
+                logger.info(f"WhatsApp template message sent to {whatsapp_recipient}")
             else:
-                # Fallback to regular SMS (current behavior)
-                logger.info("Using regular SMS (no template configured)")
+                # Standard WhatsApp message (this will always be used unless template is configured)
+                logger.info(f"Sending WhatsApp message from {whatsapp_sender} to {whatsapp_recipient}")
                 message_obj = self.client.messages.create(
                     body=message,
-                    from_=self.whatsapp_number,  # Use as regular SMS number
-                    to=recipient  # Send as regular SMS
+                    from_=whatsapp_sender,
+                    to=whatsapp_recipient
                 )
+                logger.info(f"WhatsApp message sent to {whatsapp_recipient}")
 
             logger.info(f"Message sent successfully to {recipient}. SID: {message_obj.sid}")
             return True

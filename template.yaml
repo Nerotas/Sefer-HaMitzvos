@@ -21,7 +21,7 @@ Parameters:
   TwilioWhatsAppNumber:
     Type: String
     Description: Twilio WhatsApp Number
-    Default: "+14155238886"
+    Default: "+15558414026"
 
   Recipients:
     Type: String
