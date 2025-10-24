@@ -186,7 +186,7 @@ class MitzvahLambdaBot:
 
     def _load_recipients(self) -> List[str]:
         """Load opted-in recipients from DynamoDB if SUBSCRIBERS_TABLE is set; fallback to RECIPIENTS env."""
-        table_name = os.environ.get('SUBSCRIBERS_TABLE')
+        table_name = os.environ.get('SUBSCRIBERS_TABLE')  # daily-mitzvah-bot-stack-subscribers
         numbers: List[str] = []
         if table_name:
             try:
@@ -654,6 +654,24 @@ class MitzvahLambdaBot:
         else:
             return f"Mitzvah {mitzvah_type_number}"
 
+    def convert_html_to_whatsapp_markup(self, text):
+        """Convert HTML markup to WhatsApp formatting."""
+        if not text:
+            return text
+
+        # Convert HTML tags to WhatsApp markup
+        # <i>text</i> -> _text_
+        import re
+        text = re.sub(r'<i>(.*?)</i>', r'_\1_', text)
+        # <b>text</b> -> *text*
+        text = re.sub(r'<b>(.*?)</b>', r'*\1*', text)
+        # <strong>text</strong> -> *text*
+        text = re.sub(r'<strong>(.*?)</strong>', r'*\1*', text)
+        # <em>text</em> -> _text_
+        text = re.sub(r'<em>(.*?)</em>', r'_\1_', text)
+
+        return text
+
     def format_message(self, mitzvah_data):
         """Format the WhatsApp message with holiday consolidation support."""
         date_formatted = datetime.strptime(mitzvah_data['date'], '%Y-%m-%d').strftime('%A, %B %d, %Y')
@@ -793,11 +811,11 @@ _—Daily Mitzvah Bot_"""
             # Force WhatsApp format for all messages
             whatsapp_recipient = recipient if recipient.startswith('whatsapp:') else f'whatsapp:{recipient}'
             whatsapp_sender = f'whatsapp:{self.whatsapp_number}'
-            
+
             # Check for WhatsApp Business Template (optional advanced feature)
             template_sid = os.environ.get('WHATSAPP_TEMPLATE_SID')
             use_template = os.environ.get('USE_WHATSAPP_TEMPLATE', 'false').lower() == 'true'
-            
+
             if template_sid and use_template and mitzvah_data:
                 # Use WhatsApp Business Message Template
                 logger.info(f"Using WhatsApp template: {template_sid}")
@@ -805,7 +823,7 @@ _—Daily Mitzvah Bot_"""
                 # Extract template variables from mitzvah data
                 date_formatted = datetime.strptime(mitzvah_data.get('date', ''), '%Y-%m-%d').strftime('%B %d, %Y') if mitzvah_data.get('date') else 'Today'
                 mitzvah_nums = mitzvah_data.get('mitzvos', '')
-                description = mitzvah_data.get('title', '')
+                description = self.convert_html_to_whatsapp_markup(mitzvah_data.get('title', ''))
 
                 # Handle biblical sources
                 biblical_sources = mitzvah_data.get('biblical_sources', [])
