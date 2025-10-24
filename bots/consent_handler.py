@@ -127,7 +127,7 @@ def _handle_twilio_inbound(headers, form):
     # Fetch current status (for idempotent confirmations)
     existing = _get_subscriber(from_num) or {}
     current_status = existing.get("consent_status")
-    
+
     logger.info(f"Current subscriber status for {from_num}: {current_status}")
 
     # STATUS inquiry (respond with current state and guidance)

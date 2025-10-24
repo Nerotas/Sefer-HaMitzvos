@@ -1,0 +1,22 @@
+{
+  "version": "2.0",
+  "routeKey": "POST /",
+  "rawPath": "/",
+  "rawQueryString": "",
+  "headers": {
+    "accept": "application/json",
+    "content-length": "45",
+    "content-type": "application/json",
+    "host": "edo3ijgbo2padqvuzlrvomht4y0zaiqt.lambda-url.us-east-1.on.aws",
+    "user-agent": "AWS-Lambda-Test/1.0"
+  },
+  "requestContext": {
+    "http": {
+      "method": "POST",
+      "path": "/",
+      "protocol": "HTTP/1.1"
+    }
+  },
+  "body": "{\"date\":\"2025-10-24\",\"test_mode\":true}",
+  "isBase64Encoded": false
+}
