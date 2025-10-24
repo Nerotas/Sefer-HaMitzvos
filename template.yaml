@@ -49,6 +49,8 @@ Resources:
           RECIPIENTS: !Ref Recipients
           WEBHOOK_TOKEN: !Ref WebhookToken
           SUBSCRIBERS_TABLE: !Ref SubscribersTable
+          WHATSAPP_TEMPLATE_SID: "HX0283f41ac0765d0d56ad5e50b2e77a22"
+          USE_WHATSAPP_TEMPLATE: "true"
       FunctionUrlConfig:
         AuthType: NONE
         Cors:
