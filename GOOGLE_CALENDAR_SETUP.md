@@ -41,10 +41,14 @@ This guide will help you set up Google Calendar integration for the Sefer HaMitz
    - Choose "External" user type
    - Fill in app name: "Sefer HaMitzvos Calendar"
    - Add your email as developer contact
+   - **Optional:** Add test users to avoid verification warnings:
+     - Go to "Test users" section
+     - Click "Add Users" 
+     - Add your email and any other users who will run the script
    - Save and continue through the steps
 4. Back to "Create OAuth client ID":
    - **Application type: "Desktop application"** ← This is important!
-     - NOT "Web application" 
+     - NOT "Web application"
      - NOT "Android" or "iOS"
      - Choose "Desktop application" for Python scripts
    - Name: "Sefer HaMitzvos Desktop App" (or any name you prefer)
@@ -66,8 +70,13 @@ python create_google_calendar.py
 
 1. The script will open a browser window
 2. Sign in to your Google account
-3. Grant permission for calendar access
-4. The browser will show "The authentication flow has completed"
+3. **IMPORTANT:** You'll see a warning screen: "App isn't verified"
+   - This is normal for personal projects
+   - Click "**Advanced**" (bottom left)
+   - Click "**Go to Sefer HaMitzvos Calendar (unsafe)**"
+   - This is safe because you created the app yourself
+4. Grant permission for calendar access (click "Allow")
+5. The browser will show "The authentication flow has completed"
 5. Return to the terminal - the script will continue
 
 ## 📁 File Structure
@@ -120,16 +129,18 @@ This creates `sefer_hamitzvos_calendar.ics` that can be imported into any calend
 ### Common Issues:
 
 **0. "Can't find Create Project button"**
-   - The Google Cloud Console interface changes frequently
-   - **Most common locations:**
-     - Top navigation bar: Click project dropdown → "NEW PROJECT"
-     - Dashboard: Look for "CREATE PROJECT" button
-     - IAM & Admin → Manage Resources → "CREATE PROJECT"
-     - Navigation menu (hamburger) → "Home" → "CREATE PROJECT"
-   - **If still not visible:** Try refreshing the page or using a different browser
-   - **Alternative:** Go directly to https://console.cloud.google.com/projectcreate
+
+- The Google Cloud Console interface changes frequently
+- **Most common locations:**
+  - Top navigation bar: Click project dropdown → "NEW PROJECT"
+  - Dashboard: Look for "CREATE PROJECT" button
+  - IAM & Admin → Manage Resources → "CREATE PROJECT"
+  - Navigation menu (hamburger) → "Home" → "CREATE PROJECT"
+- **If still not visible:** Try refreshing the page or using a different browser
+- **Alternative:** Go directly to https://console.cloud.google.com/projectcreate
 
 1. **"Which application type should I choose?"**
+
    - **Always choose "Desktop application"** for Python scripts
    - NOT "Web application" (that's for websites)
    - NOT "Android" or "iOS" (that's for mobile apps)
@@ -140,19 +151,29 @@ This creates `sefer_hamitzvos_calendar.ics` that can be imported into any calend
    - Make sure you downloaded and renamed the OAuth2 credentials file
    - Place it in the same folder as the scripts
 
-3. **"Authentication failed"**
+3. **"App isn't verified" or Error 403: access_denied**
+   - **This is completely normal** for personal projects that haven't undergone Google's verification process
+   - **How to proceed safely:**
+     1. You'll see: "Sefer HaMitzvos Calendar has not completed the Google verification process"
+     2. Click "**Advanced**" (small text at bottom left of the warning)
+     3. Click "**Go to Sefer HaMitzvos Calendar (unsafe)**"
+     4. This is safe because **you created the app yourself**
+   - **Why this happens:** Google requires verification for public apps, but personal projects can bypass this
+   - **Alternative:** Add yourself as a test user in the OAuth consent screen settings
+
+4. **"Authentication failed"**
 
    - Check that Google Calendar API is enabled in your project
    - Verify your OAuth2 credentials are correct
    - Try deleting `token.pickle` and re-authenticating
 
-3. **"Rate limit exceeded"**
+4. **"Rate limit exceeded"**
 
    - The script creates events in batches to avoid this
    - If it occurs, wait a few minutes and try again
    - Default quota is 1,000,000 requests per day (more than enough)
 
-4. **"Calendar not showing up"**
+5. **"Calendar not showing up"**
    - Check that the calendar was created successfully
    - Look for the calendar ID in the terminal output
    - Try refreshing Google Calendar in your browser
