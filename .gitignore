@@ -93,3 +93,15 @@ mitzvah_bot_lambda.zip
 # Backup files
 *.bak
 *.backup
+
+# Google Calendar API Credentials - NEVER COMMIT THESE!
+credentials.json
+token.pickle
+*.pickle
+
+# Generated calendar files and instructions
+calendar_setup_instructions.md
+ics_import_instructions.md
+
+# Generated PDF files (large binary files)
+*.pdf
