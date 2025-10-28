@@ -1,57 +1,208 @@
-# Rambam Mitzvot Schedule Project
+# Rambam Daily Mitzvah System
 
-A complete daily schedule of all 613 mitzvot (commandments) from Maimonides' Sefer HaMitzvot with accurate biblical sources.
+A comprehensive system for managing and distributing daily Mitzvah notifications from Maimonides' Sefer HaMitzvos. The system includes WhatsApp Business integration, calendar generation tools, and Google Calendar integration.
 
-## 📋 Project Overview
+## 🎯 Overview
 
-This project provides:
+This project provides multiple ways to engage with the 613 Mitzvot (commandments) from Maimonides' Sefer HaMitzvos through automated daily notifications and calendar systems.
 
-- **Complete 613 Mitzvot Schedule**: Daily distribution across the year
-- **Accurate Biblical Sources**: 100% verified against traditional sources
-- **Rich Educational Content**: Detailed summaries from Sefer HaMitzvot
-- **WhatsApp Bot Integration**: Automated daily mitzvah delivery via AWS Lambda
+### Key Features
 
-## 🎯 Key Achievements
+- **WhatsApp Business Integration**: Automated daily Mitzvah notifications via Twilio
+- **PDF Calendar Generation**: Professional calendar formats for printing and sharing
+- **Google Calendar Integration**: Public calendar with automated event creation
+- **ICS Export**: Universal calendar format compatible with all calendar applications
+- **AWS Lambda Deployment**: Scalable serverless architecture
 
-- ✅ **100% Source Accuracy**: All 613 biblical references verified against master list
-- ✅ **Complete Coverage**: All positive and negative commandments included
-- ✅ **Production Ready**: AWS Lambda bot with robust error handling
-- ✅ **Educational Value**: Preserves detailed Sefer HaMitzvot explanations
+## 📁 Project Structure
 
-## 📁 File Structure
+```
+├── bots/                    # WhatsApp bot implementation
+├── calendar_outputs/        # Generated calendar files (PDF, ICS)
+├── data/                    # CSV data files with Mitzvot schedules
+├── docs/                    # Documentation and setup guides
+├── lambda_deploy/           # AWS Lambda deployment files
+├── scripts/                 # Utility scripts
+├── tools/                   # Main tools and generators
+│   ├── calendar/           # Google Calendar and ICS tools
+│   └── pdf/               # PDF generation tools
+├── web/                    # Web interface components
+└── temp/                   # Temporary files and test data
+```
 
-### Core Files
+## 🚀 Quick Start
 
-- `Schedule_Complete_Sefer_HaMitzvos_WithBiblical.csv` - Main schedule with all 613 mitzvot
-- `MitzvosMasterList.txt` - Original master list (reference)
-- `Schedule.csv` - Original schedule file (reference)
+### Prerequisites
 
-### Bot Implementation
+- Python 3.11 or higher
+- Google Cloud Platform account (for calendar integration)
+- Twilio account (for WhatsApp integration)
+- AWS account (for Lambda deployment)
 
-- `bots/lambda_mitzvah_bot.py` - AWS Lambda function for WhatsApp delivery
-- `mitzvah_bot_lambda.zip` - Deployment package (when created)
+### Installation
 
-### Organization
+1. Clone the repository:
+```bash
+git clone https://github.com/your-username/Rambam.git
+cd Rambam
+```
 
-- `archive/` - Reference files and master lists
-- `scripts/` - Utility scripts for corrections and verification
-- `backups/` - Backup files from corrections process
-- `docs/` - Project documentation
+2. Create and activate virtual environment:
+```bash
+python -m venv .venv
+.\.venv\Scripts\Activate.ps1  # Windows PowerShell
+```
 
-## 🚀 Usage
+3. Install dependencies:
+```bash
+pip install -r tools/requirements.txt
+```
 
-### Daily Mitzvah Schedule
+## �️ Available Tools
 
-The main schedule file contains:
+### PDF Calendar Generation
 
-- **Date**: Daily assignment dates
-- **Sequential Number**: 1-630 (with holiday consolidations)
-- **Mitzvah Type & Number**: "Positive X" or "Negative X"
-- **Summary**: Educational description from Sefer HaMitzvot
-- **Biblical Source**: Verified traditional source reference
-- **Sefaria Link**: Direct link to source text
+- **Schedule Format**: `tools/pdf/create_schedule_pdf.py`
+  - Optimized daily schedule with grouped Mitzvot
+  - Professional formatting with source citations
+  - 350 unique dates instead of 629 individual entries
 
-### WhatsApp Bot Deployment
+- **Calendar Grid Format**: `tools/pdf/create_calendar_pdf.py`
+  - Traditional monthly calendar layout
+  - Mitzvot displayed in calendar cells
+  - Printable format for wall calendars
+
+### Google Calendar Integration
+
+- **Calendar Creator**: `tools/calendar/create_google_calendar.py`
+  - Creates public Google Calendar
+  - Bulk event creation with notifications
+  - OAuth2 authentication flow
+
+- **Analysis Tool**: `tools/calendar/google_calendar_analysis.py`
+  - Comprehensive planning and analysis
+  - Integration requirements assessment
+
+### Universal Calendar Export
+
+- **ICS Generator**: `tools/calendar/create_ics_calendar.py`
+  - Creates standard .ics calendar files
+  - Compatible with Outlook, Apple Calendar, etc.
+  - No authentication required
+
+## 📖 Documentation
+
+### Setup Guides
+
+- **Calendar Integration**: `docs/CALENDAR_README.md`
+  - Comparison of all calendar methods
+  - Feature matrix and recommendations
+  - Usage instructions for each tool
+
+- **Google Calendar Setup**: `docs/GOOGLE_CALENDAR_SETUP.md`
+  - Complete Google Cloud Console configuration
+  - OAuth2 setup and troubleshooting
+  - Verification bypass for unverified apps
+
+- **ICS Import Guide**: `docs/ics_import_instructions.md`
+  - Step-by-step calendar application setup
+  - Platform-specific import instructions
+
+### System Documentation
+
+- **AWS System**: `AWS-SYSTEM-README.md`
+  - WhatsApp bot architecture
+  - Lambda deployment process
+  - Twilio integration details
+## 🔧 Configuration
+
+### Environment Variables
+
+Copy `.env.example` to `.env` and configure:
+
+```bash
+# Twilio Configuration
+TWILIO_ACCOUNT_SID=your_account_sid
+TWILIO_AUTH_TOKEN=your_auth_token
+
+# Google Calendar API
+GOOGLE_CALENDAR_CREDENTIALS_FILE=credentials.json
+
+# AWS Configuration
+AWS_REGION=your_aws_region
+```
+
+### Google Calendar Setup
+
+1. Follow `docs/GOOGLE_CALENDAR_SETUP.md`
+2. Download `credentials.json` from Google Cloud Console
+3. Place in project root (protected by `.gitignore`)
+
+## 🚀 Deployment
+
+### AWS Lambda (WhatsApp Bot)
+
+```bash
+# Package and deploy
+.\create_lambda_package.ps1
+# Deploy using AWS CLI or Console
+```
+
+### Local Development
+
+```bash
+# Run PDF generation
+python tools/pdf/create_schedule_pdf.py
+
+# Run Google Calendar integration
+python tools/calendar/create_google_calendar.py
+
+# Generate ICS file
+python tools/calendar/create_ics_calendar.py
+```
+
+## 📊 Data Sources
+
+- **Primary Dataset**: `data/Schedule_Complete_Sefer_HaMitzvos_WithBiblical.csv`
+  - 629 Mitzvot entries with dates and sources
+  - Complete Sefer HaMitzvos coverage
+  - Biblical and Rabbinic classifications
+
+- **Master List**: `data/MitzvosMasterList.csv`
+  - Reference list of all 613 Mitzvot
+  - Categorization and indexing
+
+## 🤝 Contributing
+
+1. Fork the repository
+2. Create feature branch (`git checkout -b feature/amazing-feature`)
+3. Commit changes (`git commit -m 'Add amazing feature'`)
+4. Push to branch (`git push origin feature/amazing-feature`)
+5. Open Pull Request
+
+## 📄 License
+
+This project is licensed under the MIT License - see the [LICENSE](LICENSE) file for details.
+
+## 🙏 Acknowledgments
+
+- Maimonides (Rambam) for the Sefer HaMitzvos
+- ReportLab for PDF generation capabilities
+- Google Calendar API for integration support
+- Twilio for WhatsApp Business messaging
+
+## 📞 Support
+
+For questions or support:
+
+1. Check the documentation in `docs/`
+2. Review troubleshooting guides
+3. Open an issue on GitHub
+4. Contact the maintainers
+
+---
+
+*"The goal of the Torah's commandments is to bring mercy, loving-kindness, and peace to the world."* - Maimonides
 
 1. Upload `mitzvah_bot_lambda.zip` to AWS Lambda
 2. Configure Twilio credentials as environment variables

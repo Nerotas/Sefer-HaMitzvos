@@ -23,8 +23,14 @@ lambda_package/
 dist/
 build/
 
-# Local outputs
-response.json
+# Local outputs and temporary files
+temp/
+calendar_outputs/
+*.pdf
+*.ics
+response*.json
+test_*.json
+tmp*.json
 out.json
 
 # Legacy local packaging dir (keep untracked in future)

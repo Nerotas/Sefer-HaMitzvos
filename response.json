@@ -1,1 +1,0 @@
-{"errorMessage": "Unable to import module 'bots/lambda_mitzvah_bot': No module named 'bots'", "errorType": "Runtime.ImportModuleError", "requestId": "", "stackTrace": []}

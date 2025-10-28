@@ -43,7 +43,7 @@ This guide will help you set up Google Calendar integration for the Sefer HaMitz
    - Add your email as developer contact
    - **Optional:** Add test users to avoid verification warnings:
      - Go to "Test users" section
-     - Click "Add Users" 
+     - Click "Add Users"
      - Add your email and any other users who will run the script
    - Save and continue through the steps
 4. Back to "Create OAuth client ID":
@@ -77,7 +77,7 @@ python create_google_calendar.py
    - This is safe because you created the app yourself
 4. Grant permission for calendar access (click "Allow")
 5. The browser will show "The authentication flow has completed"
-5. Return to the terminal - the script will continue
+6. Return to the terminal - the script will continue
 
 ## 📁 File Structure
 
@@ -152,6 +152,7 @@ This creates `sefer_hamitzvos_calendar.ics` that can be imported into any calend
    - Place it in the same folder as the scripts
 
 3. **"App isn't verified" or Error 403: access_denied**
+
    - **This is completely normal** for personal projects that haven't undergone Google's verification process
    - **How to proceed safely:**
      1. You'll see: "Sefer HaMitzvos Calendar has not completed the Google verification process"
@@ -167,13 +168,13 @@ This creates `sefer_hamitzvos_calendar.ics` that can be imported into any calend
    - Verify your OAuth2 credentials are correct
    - Try deleting `token.pickle` and re-authenticating
 
-4. **"Rate limit exceeded"**
+5. **"Rate limit exceeded"**
 
    - The script creates events in batches to avoid this
    - If it occurs, wait a few minutes and try again
    - Default quota is 1,000,000 requests per day (more than enough)
 
-5. **"Calendar not showing up"**
+6. **"Calendar not showing up"**
    - Check that the calendar was created successfully
    - Look for the calendar ID in the terminal output
    - Try refreshing Google Calendar in your browser
