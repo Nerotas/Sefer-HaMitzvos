@@ -43,11 +43,14 @@ This guide will help you set up Google Calendar integration for the Sefer HaMitz
    - Add your email as developer contact
    - Save and continue through the steps
 4. Back to "Create OAuth client ID":
-   - Application type: "Desktop application"
-   - Name: "Sefer HaMitzvos Desktop App"
+   - **Application type: "Desktop application"** ← This is important!
+     - NOT "Web application" 
+     - NOT "Android" or "iOS"
+     - Choose "Desktop application" for Python scripts
+   - Name: "Sefer HaMitzvos Desktop App" (or any name you prefer)
    - Click "Create"
-5. Download the JSON file
-6. Rename it to `credentials.json` and place it in this folder
+5. **Download the JSON file** (it will have a long name like `client_secret_xxxxx.json`)
+6. **Rename it to `credentials.json`** and place it in this project folder (`C:\Github\Rambam\`)
 
 ### Step 4: Run the Calendar Creator
 
@@ -126,12 +129,18 @@ This creates `sefer_hamitzvos_calendar.ics` that can be imported into any calend
    - **If still not visible:** Try refreshing the page or using a different browser
    - **Alternative:** Go directly to https://console.cloud.google.com/projectcreate
 
-1. **"credentials.json not found"**
+1. **"Which application type should I choose?"**
+   - **Always choose "Desktop application"** for Python scripts
+   - NOT "Web application" (that's for websites)
+   - NOT "Android" or "iOS" (that's for mobile apps)
+   - NOT "TVs and Limited Input devices"
+
+2. **"credentials.json not found"**
 
    - Make sure you downloaded and renamed the OAuth2 credentials file
    - Place it in the same folder as the scripts
 
-2. **"Authentication failed"**
+3. **"Authentication failed"**
 
    - Check that Google Calendar API is enabled in your project
    - Verify your OAuth2 credentials are correct
