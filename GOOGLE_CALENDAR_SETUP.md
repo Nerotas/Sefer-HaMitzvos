@@ -13,9 +13,19 @@ This guide will help you set up Google Calendar integration for the Sefer HaMitz
 ### Step 1: Create Google Cloud Project
 
 1. Go to [Google Cloud Console](https://console.cloud.google.com/)
-2. Click "Create Project" or select existing project
-3. Give your project a name like "Sefer HaMitzvos Calendar"
-4. Click "Create"
+2. **Look for the project selector** in the top navigation bar:
+   - It usually shows "Select a project" or an existing project name
+   - It's typically located near the left side of the top bar, after the hamburger menu
+3. **Click on the project dropdown** → Click "**NEW PROJECT**"
+   - **Alternative locations to look:**
+     - "+" icon next to the project name in the top bar
+     - "CREATE PROJECT" button on the main dashboard
+     - "Manage resources" link → "Create Project"
+4. **Fill in project details:**
+   - Project name: "Sefer HaMitzvos Calendar"
+   - Organization: Choose your organization or leave as "No organization"
+   - Location: Leave as default
+5. Click "**CREATE**" and wait for the project to be created (may take 30-60 seconds)
 
 ### Step 2: Enable Google Calendar API
 
@@ -105,6 +115,16 @@ This creates `sefer_hamitzvos_calendar.ics` that can be imported into any calend
 ## 🛠 Troubleshooting
 
 ### Common Issues:
+
+**0. "Can't find Create Project button"**
+   - The Google Cloud Console interface changes frequently
+   - **Most common locations:**
+     - Top navigation bar: Click project dropdown → "NEW PROJECT"
+     - Dashboard: Look for "CREATE PROJECT" button
+     - IAM & Admin → Manage Resources → "CREATE PROJECT"
+     - Navigation menu (hamburger) → "Home" → "CREATE PROJECT"
+   - **If still not visible:** Try refreshing the page or using a different browser
+   - **Alternative:** Go directly to https://console.cloud.google.com/projectcreate
 
 1. **"credentials.json not found"**
 
