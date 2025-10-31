@@ -111,3 +111,5 @@ ics_import_instructions.md
 
 # Generated PDF files (large binary files)
 *.pdf
+.firebase/
+public/
