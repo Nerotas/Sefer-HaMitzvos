@@ -6,6 +6,7 @@ Creates a standard .ics file that can be imported into any calendar application
 
 import csv
 import os
+from pathlib import Path
 from datetime import datetime, timedelta
 from typing import List
 import logging
@@ -21,14 +22,23 @@ class ICSGenerator:
         self.calendar_name = "Sefer HaMitzvos Daily Study"
         self.description = "Daily study calendar for Maimonides' Sefer HaMitzvos (Book of Commandments)"
 
-    def load_mitzvos_data(self, csv_file: str = 'Schedule_Complete_Sefer_HaMitzvos_WithBiblical.csv') -> bool:
-        """Load mitzvos data from CSV file"""
-        if not os.path.exists(csv_file):
-            logger.error(f"CSV file not found: {csv_file}")
+    def load_mitzvos_data(self, csv_file: str | None = None) -> bool:
+        """Load mitzvos data from CSV file
+
+        Resolves default path relative to repo root to be robust to CWD.
+        """
+        if csv_file is None:
+            repo_root = Path(__file__).resolve().parents[2]
+            csv_path = repo_root / 'data' / 'Schedule_Complete_Sefer_HaMitzvos_WithBiblical.csv'
+        else:
+            csv_path = Path(csv_file)
+
+        if not csv_path.exists():
+            logger.error(f"CSV file not found: {csv_path}")
             return False
 
         try:
-            with open(csv_file, 'r', encoding='utf-8-sig') as file:
+            with open(csv_path, 'r', encoding='utf-8-sig') as file:
                 reader = csv.DictReader(file)
                 for row in reader:
                     event_date = datetime.strptime(row['Date'], '%Y-%m-%d')
@@ -45,7 +55,7 @@ class ICSGenerator:
                     }
                     self.events.append(event)
 
-            logger.info(f"Loaded {len(self.events)} events from {csv_file}")
+            logger.info(f"Loaded {len(self.events)} events from {csv_path}")
             return True
         except Exception as e:
             logger.error(f"Error loading CSV data: {e}")

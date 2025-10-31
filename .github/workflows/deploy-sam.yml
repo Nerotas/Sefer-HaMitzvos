@@ -191,7 +191,7 @@ jobs:
           - name: bot
             file: bots/lambda_mitzvah_bot.py
             zip: mitzvah_bot_lambda.zip
-            extra: Schedule.csv
+            extra: data/Schedule_Complete_Sefer_HaMitzvos_WithBiblical.csv
             secretKey: LAMBDA_FUNCTION_NAME_BOT
           - name: consent
             file: bots/consent_handler.py

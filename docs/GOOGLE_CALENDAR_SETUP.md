@@ -42,9 +42,9 @@ This guide will help you set up Google Calendar integration for the Sefer HaMitz
    - Fill in app name: "Sefer HaMitzvos Calendar"
    - Add your email as developer contact
    - **Optional:** Add test users to avoid verification warnings:
-     - Go to "Test users" section
-     - Click "Add Users"
-     - Add your email and any other users who will run the script
+     - In the current UI, this may be under the "Audience" section or the "Test users" tab
+     - Click "Add users" and add your email (e.g., nerotas7@gmail.com)
+     - You can add up to 100 testers in Testing mode
    - Save and continue through the steps
 4. Back to "Create OAuth client ID":
    - **Application type: "Desktop application"** ← This is important!
@@ -63,7 +63,7 @@ This guide will help you set up Google Calendar integration for the Sefer HaMitz
 cd C:\Github\Rambam
 
 # Run the Google Calendar creator
-python create_google_calendar.py
+python tools/calendar/create_google_calendar.py
 ```
 
 ### Step 5: Authentication Flow
@@ -119,7 +119,7 @@ C:\Github\Rambam\
 If you prefer not to use Google Calendar API, you can generate a standard ICS file:
 
 ```bash
-python create_ics_calendar.py
+python tools/calendar/create_ics_calendar.py
 ```
 
 This creates `sefer_hamitzvos_calendar.ics` that can be imported into any calendar application.

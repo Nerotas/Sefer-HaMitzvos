@@ -15,8 +15,8 @@ if (!(Test-Path "lambda_deploy")) {
 
 Write-Host "Installing dependencies (twilio/requests) if needed..." -ForegroundColor Yellow
 if ($Force -or -not (Test-Path "lambda_deploy\twilio")) {
-    Write-Host "Installing from requirements.txt into lambda_deploy" -ForegroundColor Yellow
-    python -m pip install -r requirements.txt --target lambda_deploy --no-user
+    Write-Host "Installing from tools/requirements.txt into lambda_deploy" -ForegroundColor Yellow
+    python -m pip install -r tools/requirements.txt --target lambda_deploy --no-user
 } else {
     Write-Host "Dependencies already present; skipping install. Use -Force to rebuild." -ForegroundColor Cyan
 }
@@ -27,7 +27,7 @@ Write-Host "Copying Lambda bot code and data..." -ForegroundColor Yellow
 Copy-Item "bots\lambda_mitzvah_bot.py" "lambda_deploy\lambda_function.py"
 
 # Copy the complete CSV schedule with corrected sources
-Copy-Item "Schedule_Complete_Sefer_HaMitzvos_WithBiblical.csv" "lambda_deploy\Schedule_Complete_Sefer_HaMitzvos_WithBiblical.csv"
+Copy-Item "data\Schedule_Complete_Sefer_HaMitzvos_WithBiblical.csv" "lambda_deploy\Schedule_Complete_Sefer_HaMitzvos_WithBiblical.csv"
 
 Write-Host "Creating ZIP package..." -ForegroundColor Yellow
 Compress-Archive -Path "lambda_deploy\*" -DestinationPath "mitzvah_bot_lambda.zip" -Force

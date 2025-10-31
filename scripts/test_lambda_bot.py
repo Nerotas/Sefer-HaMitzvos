@@ -62,7 +62,7 @@ def test_lambda_with_date(test_date=None):
                 import csv
                 self.schedule_data = []
 
-                csv_path = 'Schedule_Complete_Sefer_HaMitzvos_WithBiblical.csv'
+                csv_path = 'data/Schedule_Complete_Sefer_HaMitzvos_WithBiblical.csv'
                 print(f"Loading from: {csv_path}")
 
                 try:
@@ -86,7 +86,9 @@ def test_lambda_with_date(test_date=None):
                     self.schedule_data = []
 
                 # Mock holiday data for testing
-                self.holiday_data = []            def send_to_recipient(self, recipient, message):
+                self.holiday_data = []
+
+            def send_to_recipient(self, recipient, message):
                 """Mock send function for testing."""
                 print(f"\n📤 WOULD SEND TO: {recipient}")
                 print("📨 MESSAGE CONTENT:")

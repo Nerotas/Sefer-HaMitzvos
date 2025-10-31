@@ -1,0 +1,20 @@
+# Jewish Holiday Calendar 2025-2026 (Verified with Hebcal.com)
+# Format: Date,Holiday_Name,Holiday_Type,Work_Forbidden
+# Holiday_Type: major_yomtov, minor_yomtov, fast_day, other
+# Work_Forbidden: yes/no
+
+Date,Holiday_Name,Holiday_Type,Work_Forbidden
+2026-04-02,Passover Day 1,major_yomtov,yes
+2026-04-03,Passover Day 2,major_yomtov,yes
+2026-04-08,Passover Day 7,major_yomtov,yes
+2026-04-09,Passover Day 8,major_yomtov,yes
+2026-05-22,Shavuot Day 1,major_yomtov,yes
+2026-05-23,Shavuot Day 2,major_yomtov,yes
+2026-07-29,Tish B Av,minor_yomtov,yes
+2026-09-12,Rosh Hashanah Day 1,major_yomtov,yes
+2026-09-13,Rosh Hashanah Day 2,major_yomtov,yes
+2026-09-21,Yom Kippur,major_yomtov,yes
+2026-09-26,Sukkot Day 1,major_yomtov,yes
+2026-09-27,Sukkot Day 2,major_yomtov,yes
+2026-10-03,Shemini Atzeret,major_yomtov,yes
+2026-10-04,Simchat Torah,major_yomtov,yes

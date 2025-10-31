@@ -42,18 +42,21 @@ This project provides multiple ways to engage with the 613 Mitzvot (commandments
 ### Installation
 
 1. Clone the repository:
+
 ```bash
 git clone https://github.com/your-username/Rambam.git
 cd Rambam
 ```
 
 2. Create and activate virtual environment:
+
 ```bash
 python -m venv .venv
 .\.venv\Scripts\Activate.ps1  # Windows PowerShell
 ```
 
 3. Install dependencies:
+
 ```bash
 pip install -r tools/requirements.txt
 ```
@@ -63,6 +66,7 @@ pip install -r tools/requirements.txt
 ### PDF Calendar Generation
 
 - **Schedule Format**: `tools/pdf/create_schedule_pdf.py`
+
   - Optimized daily schedule with grouped Mitzvot
   - Professional formatting with source citations
   - 350 unique dates instead of 629 individual entries
@@ -75,6 +79,7 @@ pip install -r tools/requirements.txt
 ### Google Calendar Integration
 
 - **Calendar Creator**: `tools/calendar/create_google_calendar.py`
+
   - Creates public Google Calendar
   - Bulk event creation with notifications
   - OAuth2 authentication flow
@@ -95,11 +100,13 @@ pip install -r tools/requirements.txt
 ### Setup Guides
 
 - **Calendar Integration**: `docs/CALENDAR_README.md`
+
   - Comparison of all calendar methods
   - Feature matrix and recommendations
   - Usage instructions for each tool
 
 - **Google Calendar Setup**: `docs/GOOGLE_CALENDAR_SETUP.md`
+
   - Complete Google Cloud Console configuration
   - OAuth2 setup and troubleshooting
   - Verification bypass for unverified apps
@@ -114,6 +121,7 @@ pip install -r tools/requirements.txt
   - WhatsApp bot architecture
   - Lambda deployment process
   - Twilio integration details
+
 ## 🔧 Configuration
 
 ### Environment Variables
@@ -164,6 +172,7 @@ python tools/calendar/create_ics_calendar.py
 ## 📊 Data Sources
 
 - **Primary Dataset**: `data/Schedule_Complete_Sefer_HaMitzvos_WithBiblical.csv`
+
   - 629 Mitzvot entries with dates and sources
   - Complete Sefer HaMitzvos coverage
   - Biblical and Rabbinic classifications
@@ -202,7 +211,7 @@ For questions or support:
 
 ---
 
-*"The goal of the Torah's commandments is to bring mercy, loving-kindness, and peace to the world."* - Maimonides
+_"The goal of the Torah's commandments is to bring mercy, loving-kindness, and peace to the world."_ - Maimonides
 
 1. Upload `mitzvah_bot_lambda.zip` to AWS Lambda
 2. Configure Twilio credentials as environment variables

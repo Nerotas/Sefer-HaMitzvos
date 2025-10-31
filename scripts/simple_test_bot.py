@@ -17,7 +17,7 @@ class TestMitzvahBot:
         # Load schedule data from CSV directly
         self.schedule_data = []
 
-        csv_path = 'Schedule_Complete_Sefer_HaMitzvos_WithBiblical.csv'
+        csv_path = 'data/Schedule_Complete_Sefer_HaMitzvos_WithBiblical.csv'
         print(f"Loading from: {csv_path}")
 
         try:

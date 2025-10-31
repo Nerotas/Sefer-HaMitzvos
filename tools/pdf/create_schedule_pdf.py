@@ -13,6 +13,7 @@ from reportlab.lib.styles import getSampleStyleSheet, ParagraphStyle
 from reportlab.lib.units import inch
 from reportlab.lib.enums import TA_CENTER, TA_LEFT, TA_JUSTIFY
 import os
+from pathlib import Path
 
 class MitzvosScheduleGenerator:
     def __init__(self, csv_file):
@@ -187,15 +188,16 @@ class MitzvosScheduleGenerator:
 
 def main():
     """Main function to generate the schedule"""
-    csv_file = "Schedule_Complete_Sefer_HaMitzvos_WithBiblical.csv"
+    repo_root = Path(__file__).resolve().parents[2]
+    csv_path = repo_root / 'data' / 'Schedule_Complete_Sefer_HaMitzvos_WithBiblical.csv'
 
-    if not os.path.exists(csv_file):
-        print(f"Error: CSV file '{csv_file}' not found!")
+    if not csv_path.exists():
+        print(f"Error: CSV file '{csv_path}' not found!")
         return
 
     print("Creating Sefer HaMitzvos PDF Schedule...")
 
-    generator = MitzvosScheduleGenerator(csv_file)
+    generator = MitzvosScheduleGenerator(str(csv_path))
     generator.generate_schedule_pdf("Sefer_HaMitzvos_Daily_Schedule.pdf")
 
     print("Schedule generation complete!")

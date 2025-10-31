@@ -15,6 +15,7 @@ from reportlab.lib.units import inch
 from reportlab.pdfgen import canvas
 from reportlab.lib.enums import TA_CENTER, TA_LEFT, TA_RIGHT
 import os
+from pathlib import Path
 
 class MitzvosCalendarGenerator:
     def __init__(self, csv_file):
@@ -222,15 +223,16 @@ class MitzvosCalendarGenerator:
 
 def main():
     """Main function to generate the calendar"""
-    csv_file = "Schedule_Complete_Sefer_HaMitzvos_WithBiblical.csv"
+    repo_root = Path(__file__).resolve().parents[2]
+    csv_path = repo_root / 'data' / 'Schedule_Complete_Sefer_HaMitzvos_WithBiblical.csv'
 
-    if not os.path.exists(csv_file):
-        print(f"Error: CSV file '{csv_file}' not found!")
+    if not csv_path.exists():
+        print(f"Error: CSV file '{csv_path}' not found!")
         return
 
     print("Creating Sefer HaMitzvos PDF Calendar...")
 
-    generator = MitzvosCalendarGenerator(csv_file)
+    generator = MitzvosCalendarGenerator(str(csv_path))
     generator.generate_pdf_calendar("Sefer_HaMitzvos_Calendar_2025-2026.pdf")
 
     print("Calendar generation complete!")

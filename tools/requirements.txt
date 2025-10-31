@@ -9,3 +9,10 @@ requests>=2.32.0
 # Note: python-dotenv, schedule not needed in Lambda
 # Environment variables managed by AWS Lambda
 # Scheduling handled by CloudWatch Events
+
+
+# Calendar & PDF Tools (local utilities)
+google-api-python-client>=2.142.0
+google-auth-httplib2>=0.2.0
+google-auth-oauthlib>=1.2.1
+reportlab>=4.2.5

@@ -7,7 +7,7 @@ This project provides multiple ways to integrate the complete Sefer HaMitzvos st
 ### Option 1: ICS File Import (Easiest - No Setup Required)
 
 ```bash
-python create_ics_calendar.py
+python tools/calendar/create_ics_calendar.py
 ```
 
 - ✅ **Works immediately** - no Google API setup needed
@@ -19,7 +19,7 @@ python create_ics_calendar.py
 
 ```bash
 # See GOOGLE_CALENDAR_SETUP.md for detailed setup
-python create_google_calendar.py
+python tools/calendar/create_google_calendar.py
 ```
 
 - ✅ **Creates public shareable calendar**
@@ -55,17 +55,32 @@ python create_google_calendar.py
 
 ### For ICS File Method:
 
-1. Run `python create_ics_calendar.py`
+1. Run `python tools/calendar/create_ics_calendar.py`
 2. Import the generated `sefer_hamitzvos_calendar.ics` into your calendar app
 3. Follow the instructions in `ics_import_instructions.md`
 
 ### For Google Calendar API Method:
 
 1. Follow the complete setup guide in `GOOGLE_CALENDAR_SETUP.md`
-2. Run `python create_google_calendar.py`
+2. Run `python tools/calendar/create_google_calendar.py`
 3. Share the generated calendar link with your community
 
-## 📊 Comparison: ICS vs Google Calendar API
+Note: In the current Google Cloud UI, adding "Test users" is sometimes located under the "Audience" section of the OAuth consent screen rather than a separate tab. If you don't see a "Test users" tab, open the consent screen editor and check "Audience" to add your Gmail as a tester.
+
+## � Unsubscribe or manage notifications
+
+Your participation is fully opt-in, and you (or recipients) can opt-out anytime:
+
+- Google Calendar (web): Settings → under "Settings for my calendars" select this calendar → Remove calendar → Unsubscribe
+- Google Calendar app: Tap the calendar name → uncheck or Remove to stop events/alerts
+- Apple/Outlook (iCal): Remove the subscribed calendar from Accounts/Subscriptions
+- Manage reminders: In calendar settings, adjust event notifications without unsubscribing
+
+If you authorized the app while creating/maintaining the calendar and want to revoke access:
+
+- myaccount.google.com/permissions → find "Sefer HaMitzvos Calendar" → Remove access
+
+## �📊 Comparison: ICS vs Google Calendar API
 
 | Feature              | ICS File          | Google Calendar API  |
 | -------------------- | ----------------- | -------------------- |

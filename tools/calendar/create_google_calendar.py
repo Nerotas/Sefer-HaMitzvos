@@ -5,6 +5,7 @@ Creates a dedicated Google Calendar with daily mitzvah study events
 """
 
 import os
+from pathlib import Path
 import csv
 import json
 import pickle
@@ -56,7 +57,16 @@ This calendar provides systematic daily study of all 613 biblical commandments a
 
 ✡️ Subscribe to this calendar to receive daily mitzvah study reminders and integrate Torah learning into your daily routine.
 
-🔗 Related: This calendar complements the daily WhatsApp study group for discussions and community learning.''',
+🔗 Related: This calendar complements the daily WhatsApp study group for discussions and community learning.
+
+—
+Unsubscribe / Manage notifications:
+• Google Calendar (web): Settings → under "Settings for my calendars" select "Sefer HaMitzvos Daily Study" → Access permissions / Remove calendar → Unsubscribe.
+• Google Calendar app: Tap the calendar name → uncheck or Remove to stop seeing events/alerts.
+• Apple/Outlook (iCal link): Remove the subscribed calendar from your app's Accounts/Subscriptions.
+
+Revoke app access (only for those who ran the setup): myaccount.google.com/permissions → find "Sefer HaMitzvos Calendar" → Remove access.
+''',
             'timeZone': 'America/Chicago',  # Adjust as needed
             'location': 'Your Study Space'
         }
@@ -119,16 +129,27 @@ This calendar provides systematic daily study of all 613 biblical commandments a
             logger.error(f"Failed to build Calendar service: {e}")
             return False
 
-    def load_mitzvos_data(self, csv_file: str = 'Schedule_Complete_Sefer_HaMitzvos_WithBiblical.csv'):
-        """Load mitzvos data from CSV file"""
+    def load_mitzvos_data(self, csv_file: Optional[str] = None):
+        """Load mitzvos data from CSV file
+
+        If no path is provided, resolve the CSV path relative to the repository root
+        regardless of current working directory.
+        """
         self.mitzvos_data = []
 
-        if not os.path.exists(csv_file):
-            logger.error(f"CSV file not found: {csv_file}")
+        if csv_file is None:
+            # tools/calendar/ -> repo root is parents[2]
+            repo_root = Path(__file__).resolve().parents[2]
+            csv_path = repo_root / 'data' / 'Schedule_Complete_Sefer_HaMitzvos_WithBiblical.csv'
+        else:
+            csv_path = Path(csv_file)
+
+        if not csv_path.exists():
+            logger.error(f"CSV file not found: {csv_path}")
             return False
 
         try:
-            with open(csv_file, 'r', encoding='utf-8-sig') as file:
+            with open(csv_path, 'r', encoding='utf-8-sig') as file:
                 reader = csv.DictReader(file)
                 for row in reader:
                     self.mitzvos_data.append({

@@ -231,8 +231,8 @@ class MitzvahLambdaBot:
             import os
 
             # Try to load from the enhanced CSV schedule with biblical sources first
-            enhanced_csv_path = 'Schedule_Complete_Sefer_HaMitzvos_WithBiblical.csv'
-            original_csv_path = 'Schedule_Complete_Sefer_HaMitzvos.csv'
+            enhanced_csv_path = 'data/Schedule_Complete_Sefer_HaMitzvos_WithBiblical.csv'
+            original_csv_path = 'data/Schedule_Complete_Sefer_HaMitzvos.csv'
 
             if os.path.exists(enhanced_csv_path):
                 logger.info("Loading schedule from enhanced CSV file with biblical sources")
@@ -329,7 +329,7 @@ class MitzvahLambdaBot:
         """
         Embed complete Sefer HaMitzvot schedule data directly in Lambda function
         Updated with the complete 628-entry schedule including proper conclusion positioning
-        NOTE: This method contains the complete schedule - see Schedule_Complete_Sefer_HaMitzvos.csv for source
+        NOTE: This method contains the complete schedule - see data/Schedule_Complete_Sefer_HaMitzvos_WithBiblical.csv for source
         """
         # Due to size constraints, embedding full 628 entries would exceed lambda limits
         # Loading from CSV or external source recommended for production
@@ -363,7 +363,7 @@ class MitzvahLambdaBot:
                 'Source': 'Sefer HaMitzvot Introduction',
                 'Sefaria_Link': 'https://www.sefaria.org/Sefer_HaMitzvot%2C_Shorashim.7?lang=bi'
             }
-            # Complete 628-entry schedule available in Schedule_Complete_Sefer_HaMitzvos.csv
+            # Complete 628-entry schedule available in data/Schedule_Complete_Sefer_HaMitzvos_WithBiblical.csv
             # For full production deployment, implement CSV loading or external data source
         ]
 
