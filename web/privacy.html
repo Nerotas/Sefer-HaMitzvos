@@ -1,0 +1,113 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+    <meta charset="utf-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1" />
+    <title>Privacy Policy · Sefer HaMitzvos Daily Study</title>
+    <style>
+        body {
+            font-family: system-ui, -apple-system, Segoe UI, Roboto, Arial, sans-serif;
+            margin: 0;
+            color: #111;
+        }
+
+        header {
+            background: #0b5394;
+            color: #fff;
+            padding: 28px 16px;
+        }
+
+        header h1 {
+            margin: 0 0 8px;
+            font-size: 24px;
+        }
+
+        main {
+            padding: 24px 16px;
+            max-width: 840px;
+            margin: 0 auto;
+        }
+
+        a {
+            color: #0b5394;
+        }
+
+        footer {
+            margin-top: 40px;
+            padding: 24px 16px;
+            background: #f6f7f9;
+            font-size: 14px;
+        }
+
+        h2 {
+            margin-top: 28px;
+        }
+    </style>
+</head>
+
+<body>
+    <header>
+        <h1>Privacy Policy</h1>
+        <p>Sefer HaMitzvos Daily Study</p>
+    </header>
+
+    <main>
+        <p>Last updated: <span id="date"></span></p>
+
+        <h2>Overview</h2>
+        <p>
+            This project provides a public calendar for daily Sefer HaMitzvos study. Subscribing to the calendar
+            does not share personal data with us. If you personally run the setup tool to create a calendar,
+            it requests the minimum Google Calendar scope to create and manage events in your own account.
+        </p>
+
+        <h2>What data we access</h2>
+        <ul>
+            <li><strong>Google Calendar API:</strong> The tool uses the scope
+                <code>https://www.googleapis.com/auth/calendar</code> to create a calendar named “Sefer HaMitzvos Daily
+                Study” and insert daily study events. It does not read unrelated user data.</li>
+            <li><strong>No backend collection:</strong> We do not operate a backend that stores your personal data for
+                calendar subscriptions.</li>
+            <li><strong>WhatsApp (if you opt-in separately):</strong> Phone numbers and consent status are used only to
+                deliver requested messages and can be removed anytime by replying <code>STOP</code>.</li>
+        </ul>
+
+        <h2>How we use data</h2>
+        <ul>
+            <li>Create and update the study calendar and its events.</li>
+            <li>Provide reminder notifications based on your own calendar settings.</li>
+            <li>Support opt-in WhatsApp messages when explicitly requested by you.</li>
+        </ul>
+
+        <h2>Sharing</h2>
+        <p>We do not sell or share personal data with third parties.</p>
+
+        <h2>Retention</h2>
+        <p>No centralized retention. Calendar data resides in your own Google account. WhatsApp opt-in can be revoked at
+            any time.</p>
+
+        <h2>Your choices</h2>
+        <ul>
+            <li>Unsubscribe or hide the calendar in your calendar app at any time.</li>
+            <li>Adjust or disable event notifications in your calendar settings.</li>
+            <li>Revoke Google access at <a href="https://myaccount.google.com/permissions" target="_blank"
+                    rel="noopener noreferrer">myaccount.google.com/permissions</a>.</li>
+            <li>For WhatsApp messages, reply <code>STOP</code> to unsubscribe.</li>
+        </ul>
+
+        <h2>Contact</h2>
+        <p>Email: <a href="mailto:maintainer@example.com">maintainer@example.com</a></p>
+    </main>
+
+    <footer>
+        <p>&copy; <span id="year"></span> Sefer HaMitzvos Daily Study</p>
+    </footer>
+    <script>
+        const d=new Date();
+        document.getElementById('year').textContent=d.getFullYear();
+        document.getElementById('date').textContent=d.toLocaleDateString();
+    </script>
+</body>
+
+</html>
