@@ -2,6 +2,10 @@
 
 A comprehensive system for managing and distributing daily Mitzvah notifications from Maimonides' Sefer HaMitzvos. The system includes WhatsApp Business integration, calendar generation tools, and Google Calendar integration.
 
+## ⚠️ Project intent and disclaimer
+
+This is a passion project focused on testing new ideas and learning to use AI. It is not intended as a recommended template for serious or production use.
+
 ## 🎯 Overview
 
 This project provides multiple ways to engage with the 613 Mitzvot (commandments) from Maimonides' Sefer HaMitzvos through automated daily notifications and calendar systems.
