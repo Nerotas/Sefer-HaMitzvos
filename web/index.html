@@ -1,0 +1,124 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+    <meta charset="utf-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1" />
+    <title>Sefer HaMitzvos Daily Study</title>
+    <meta name="description"
+        content="Subscribe to the Sefer HaMitzvos Daily Study calendar with daily reminders, sources, and Sefaria links." />
+    <style>
+        body {
+            font-family: system-ui, -apple-system, Segoe UI, Roboto, Arial, sans-serif;
+            margin: 0;
+            color: #111;
+        }
+
+        header {
+            background: #0b5394;
+            color: #fff;
+            padding: 32px 16px;
+        }
+
+        header h1 {
+            margin: 0 0 8px;
+            font-size: 28px;
+        }
+
+        main {
+            padding: 24px 16px;
+            max-width: 840px;
+            margin: 0 auto;
+        }
+
+        a.button {
+            display: inline-block;
+            margin: 8px 8px 8px 0;
+            padding: 12px 16px;
+            background: #0b5394;
+            color: #fff;
+            text-decoration: none;
+            border-radius: 6px;
+        }
+
+        .muted {
+            color: #555;
+        }
+
+        footer {
+            margin-top: 40px;
+            padding: 24px 16px;
+            background: #f6f7f9;
+            font-size: 14px;
+        }
+
+        .note {
+            background: #fff8e1;
+            border-left: 4px solid #ffb300;
+            padding: 12px;
+            margin: 16px 0;
+        }
+
+        nav a {
+            color: #fff;
+            margin-right: 16px;
+            text-decoration: underline;
+        }
+    </style>
+</head>
+
+<body>
+    <header>
+        <nav>
+            <a href="/">Home</a>
+            <a href="/web/privacy.html">Privacy</a>
+        </nav>
+        <h1>Sefer HaMitzvos Daily Study</h1>
+        <p class="muted">A public calendar with daily mitzvah study reminders, biblical sources, and Sefaria links.</p>
+    </header>
+
+    <main>
+        <h2>Subscribe</h2>
+        <p>Choose the option that matches your calendar app:</p>
+        <p>
+            <a class="button"
+                href="https://calendar.google.com/calendar/u/0?cid=62162918978013480d5245a9240b35efcb62e5e4c6b5b2c2cfc5ac9268ed7aea@group.calendar.google.com">Add
+                to Google Calendar</a>
+            <a class="button"
+                href="https://calendar.google.com/calendar/ical/62162918978013480d5245a9240b35efcb62e5e4c6b5b2c2cfc5ac9268ed7aea@group.calendar.google.com/public/basic.ics">Subscribe
+                via iCal (Apple/Outlook)</a>
+        </p>
+
+        <div class="note">
+            <strong>Unsubscribe / notifications:</strong>
+            You can remove or hide the calendar anytime from your calendar app settings. For detailed steps, see
+            <a href="/docs/UNSUBSCRIBE.md">Unsubscribe guide</a>.
+        </div>
+
+        <h2>About</h2>
+        <p>
+            This project provides a systematic daily study schedule for Maimonides' Sefer HaMitzvos
+            (Book of Commandments). Each event contains the mitzvah number, a concise description,
+            biblical sources when available, and a direct Sefaria link for further learning.
+        </p>
+
+        <h3>Data & Privacy</h3>
+        <p>
+            Subscribing to the public calendar does not share personal data with us. If you ran the
+            setup script, it uses the Google Calendar API with the single Calendar scope to create
+            the calendar and events in your account. See our <a href="/web/privacy.html">Privacy Policy</a> for details.
+        </p>
+
+        <p class="muted">Questions? Contact: <a href="mailto:maintainer@example.com">maintainer@example.com</a></p>
+    </main>
+
+    <footer>
+        <p>
+            &copy; <span id="year"></span> Sefer HaMitzvos Daily Study ·
+            <a href="/web/privacy.html">Privacy Policy</a>
+        </p>
+    </footer>
+    <script>document.getElementById('year').textContent=new Date().getFullYear();</script>
+</body>
+
+</html>
