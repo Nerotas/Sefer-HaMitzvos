@@ -8,7 +8,7 @@ This project provides multiple ways to engage with the 613 Mitzvot (commandments
 
 ### Key Features
 
-- **WhatsApp Business Integration**: Automated daily Mitzvah notifications via Twilio
+- **WhatsApp Business Integration [Deprecated]**: Previously automated daily WhatsApp notifications via Twilio. See `bots/README.md` for deprecation details.
 - **PDF Calendar Generation**: Professional calendar formats for printing and sharing
 - **Google Calendar Integration**: Public calendar with automated event creation
 - **ICS Export**: Universal calendar format compatible with all calendar applications
@@ -148,12 +148,12 @@ AWS_REGION=your_aws_region
 
 ## 🚀 Deployment
 
-### AWS Lambda (WhatsApp Bot)
+### AWS Lambda (WhatsApp Bot) — Deprecated
 
 ```bash
-# Package and deploy
-.\create_lambda_package.ps1
-# Deploy using AWS CLI or Console
+# Deprecated: Packaging and deployment steps retained for historical reference only
+# .\create_lambda_package.ps1
+# Deploy using AWS CLI or Console (legacy)
 ```
 
 ### Local Development

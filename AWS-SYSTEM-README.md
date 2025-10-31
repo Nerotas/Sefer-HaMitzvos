@@ -1,6 +1,6 @@
-# AWS System Overview – Sefer HaMitzvos Daily Bot
+# AWS System Overview – Sefer HaMitzvos Daily Bot (Deprecated)
 
-This document explains everything used in our AWS system, how components fit together, and the exact order of operations from commit → deploy → runtime. It serves as the single source of truth for ops.
+This document describes the former AWS-based WhatsApp bot system. As of October 2025, this bot is deprecated due to Meta/WhatsApp policy restrictions on daily messaging. The content below is retained for historical reference only and is not recommended for production use.
 
 ---
 
